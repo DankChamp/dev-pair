@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DevPair — AI Team Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0f1117;
+  --bg2:#161b27;
+  --bg3:#1e2535;
+  --bg4:#252d40;
+  --border:#2a3348;
+  --border2:#3a4560;
+  --text:#e8eaf0;
+  --text2:#8b95b0;
+  --text3:#555f7a;
+  --accent:#6366f1;
+  --accent2:#818cf8;
+  --accent-bg:rgba(99,102,241,.12);
+  --accent-border:rgba(99,102,241,.3);
+  --green:#22c55e;
+  --green-bg:rgba(34,197,94,.1);
+  --green-border:rgba(34,197,94,.25);
+  --amber:#f59e0b;
+  --amber-bg:rgba(245,158,11,.1);
+  --amber-border:rgba(245,158,11,.25);
+  --red:#ef4444;
+  --red-bg:rgba(239,68,68,.1);
+  --red-border:rgba(239,68,68,.25);
+  --radius:10px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+a{color:var(--accent2);text-decoration:none}
+
+/* ── SETUP SCREEN ── */
+#setup-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.setup-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:36px;width:100%;max-width:440px;box-shadow:var(--shadow)}
+.setup-logo{font-size:28px;font-weight:600;margin-bottom:6px}
+.setup-logo span{color:var(--accent2)}
+.setup-sub{color:var(--text2);font-size:13px;margin-bottom:28px;line-height:1.6}
+.setup-role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.role-card{border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .15s;text-align:center}
+.role-card:hover{border-color:var(--accent-border);background:var(--accent-bg)}
+.role-card.selected{border-color:var(--accent);background:var(--accent-bg)}
+.role-card .icon{font-size:26px;margin-bottom:8px}
+.role-card .label{font-size:13px;font-weight:500}
+.role-card .desc{font-size:11px;color:var(--text2);margin-top:3px}
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fg label{font-size:12px;color:var(--text2);font-weight:500}
+.fg input{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.fg input:focus{border-color:var(--accent)}
+.fg .hint{font-size:11px;color:var(--text3)}
+.btn-primary{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .15s}
+.btn-primary:hover{opacity:.85}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── APP SHELL ── */
+#app{display:none;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{display:flex;align-items:center;gap:12px;padding:0 20px;height:54px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.topbar-logo{font-size:16px;font-weight:600;margin-right:4px}
+.topbar-logo span{color:var(--accent2)}
+.project-name{font-size:13px;color:var(--text2);border:none;background:transparent;font-family:'Inter',sans-serif;color:var(--text2);outline:none;max-width:180px}
+.project-name:focus{color:var(--text)}
+.project-select{padding:5px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg3);color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none;max-width:160px;cursor:pointer}
+.project-select:focus{border-color:var(--accent)}
+.sync-live{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.sync-live.live{color:var(--green)}
+.sync-pulse{width:6px;height:6px;border-radius:50%;background:var(--text3)}
+.sync-live.live .sync-pulse{background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.divider-v{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.tabs{display:flex;gap:2px}
+.tab-btn{padding:6px 14px;border-radius:7px;border:none;background:transparent;color:var(--text2);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+.tab-btn:hover{color:var(--text);background:var(--bg3)}
+.tab-btn.active{color:var(--accent2);background:var(--accent-bg)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.online-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid var(--border);font-size:12px;background:var(--bg3)}
+.online-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.online-dot.off{background:var(--text3);box-shadow:none}
+.user-chip{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500}
+.user-chip.me{background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border)}
+.user-chip.partner{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.sync-btn{padding:5px 10px;border:1px solid var(--border);border-radius:7px;background:transparent;color:var(--text2);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
+.sync-btn:hover{border-color:var(--accent-border);color:var(--accent2)}
+.sync-btn.spinning svg{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── MAIN LAYOUT ── */
+.main{display:flex;flex:1;overflow:hidden}
+.content{flex:1;overflow:auto;padding:20px}
+.sidebar{width:220px;border-left:1px solid var(--border);background:var(--bg2);padding:16px;display:flex;flex-direction:column;gap:18px;overflow-y:auto;flex-shrink:0}
+
+/* ── PANELS ── */
+.panel{display:none}
+.panel.active{display:block}
+
+/* ── BOARD ── */
+.board-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.board-title{font-size:18px;font-weight:600}
+.board-actions{display:flex;gap:8px}
+.board-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.col{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;min-height:300px}
+.col-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.col-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text2)}
+.col-count{font-size:11px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:1px 8px}
+.col-todo .col-label{color:var(--text2)}
+.col-ip .col-label{color:var(--amber)}
+.col-done .col-label{color:var(--green)}
+.task-list{display:flex;flex-direction:column;gap:8px}
+.task-card{background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:12px;cursor:pointer;transition:all .15s;position:relative}
+.task-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.task-card.done-card{opacity:.5}
+.task-card.done-card .task-title{text-decoration:line-through}
+.task-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+.task-title{font-size:13px;font-weight:500;line-height:1.4}
+.pri-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.pri-dot.high{background:var(--red)}
+.pri-dot.medium{background:var(--amber)}
+.pri-dot.low{background:var(--green)}
+.task-desc{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:8px}
+.task-footer{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.tag-me{background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border)}
+.tag-partner{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.tag-both{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.tag-deadline{background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
+.tag-deadline.overdue{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.tag-deadline.soon{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)}
+.task-edit-btn{position:absolute;top:8px;right:8px;opacity:0;padding:3px 6px;border:1px solid var(--border);border-radius:5px;background:var(--bg4);color:var(--text2);font-size:10px;cursor:pointer;transition:opacity .15s}
+.task-card:hover .task-edit-btn{opacity:1}
+.advance-btn{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;margin-left:auto;font-family:'Inter',sans-serif;transition:color .15s}
+.advance-btn:hover{color:var(--accent2)}
+.add-task-btn{width:100%;padding:8px;border:1px dashed var(--border);border-radius:8px;background:transparent;color:var(--text3);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;margin-top:8px}
+.add-task-btn:hover{border-color:var(--accent-border);color:var(--accent2)}
+
+/* ── AI CHAT ── */
+.chat-layout{display:flex;gap:14px;height:calc(100vh - 94px)}
+.chat-main{flex:1;display:flex;flex-direction:column}
+.chat-messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding-bottom:12px}
+.msg{display:flex;gap:10px;align-items:flex-start}
+.msg-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.msg-avatar.ai{background:var(--accent-bg);color:var(--accent2);border:1px solid var(--accent-border)}
+.msg-avatar.me{background:var(--bg4);color:var(--text);border:1px solid var(--border2)}
+.msg-avatar.partner{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.msg-bubble{padding:11px 14px;border-radius:10px;font-size:13px;line-height:1.65;max-width:82%}
+.msg-bubble.ai{background:var(--bg3);border:1px solid var(--border);color:var(--text)}
+.msg-bubble.me{background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--text)}
+.msg-bubble.partner{background:var(--green-bg);border:1px solid var(--green-border);color:var(--text)}
+.msg-bubble.system{background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-style:italic;font-size:12px}
+.msg-meta{font-size:11px;color:var(--text3);margin-top:4px}
+.typing-bubble{display:flex;gap:4px;align-items:center;padding:12px 14px}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);animation:tdot .9s infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+@keyframes tdot{0%,80%,100%{transform:scale(1);opacity:.4}40%{transform:scale(1.2);opacity:1}}
+.chat-input-area{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.chat-input-row{display:flex;gap:8px}
+.chat-input{flex:1;padding:11px 14px;border:1px solid var(--border);border-radius:9px;background:var(--bg3);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;resize:none;transition:border-color .15s}
+.chat-input:focus{border-color:var(--accent)}
+.send-btn{padding:11px 18px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+.send-btn:hover{opacity:.85}
+.send-btn:disabled{opacity:.4;cursor:not-allowed}
+.quick-prompts{display:flex;gap:7px;flex-wrap:wrap}
+.qp{padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.qp:hover{border-color:var(--accent-border);color:var(--accent2);background:var(--accent-bg)}
+.chat-sidebar{width:200px;flex-shrink:0;display:flex;flex-direction:column;gap:14px}
+
+/* ── OVERVIEW ── */
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.ov-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.ov-card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);margin-bottom:12px}
+.big-num{font-size:32px;font-weight:600;line-height:1}
+.prog-bar{height:6px;border-radius:3px;background:var(--bg4);overflow:hidden;margin-top:8px}
+.prog-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .5s}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none;padding-bottom:0}
+.stat-label{font-size:13px;color:var(--text2)}
+.stat-val{font-size:13px;font-weight:500}
+.dl-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.dl-item:last-child{border-bottom:none}
+.dl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dl-name{font-size:13px;flex:1}
+.dl-when{font-size:12px;color:var(--text2)}
+.activity-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:4px;flex-shrink:0}
+
+/* ── SIDEBAR ── */
+.sb-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:8px}
+.sb-filter-chip{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:block;width:100%;text-align:left;margin-bottom:4px}
+.sb-filter-chip:hover{border-color:var(--border2);color:var(--text)}
+.sb-filter-chip.active{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent2)}
+.sb-stat{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.sb-stat:last-child{border-bottom:none}
+.sb-stat-val{font-weight:600}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;width:100%;max-width:440px;box-shadow:var(--shadow);max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:18px}
+.mfg{display:flex;flex-direction:column;gap:4px;margin-bottom:13px}
+.mfg label{font-size:11px;font-weight:500;color:var(--text2)}
+.mfg input,.mfg select,.mfg textarea{padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.mfg input:focus,.mfg select:focus,.mfg textarea:focus{border-color:var(--accent)}
+.mfg select option{background:var(--bg3)}
+.mfg textarea{resize:vertical;min-height:70px}
+.mfg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.btn-modal{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s}
+.btn-cancel{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-cancel:hover{border-color:var(--border2);color:var(--text)}
+.btn-save{background:var(--accent);border:1px solid var(--accent);color:#fff}
+.btn-save:hover{opacity:.85}
+.btn-danger{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:11px 16px;font-size:13px;color:var(--text);box-shadow:var(--shadow);z-index:200;transform:translateY(60px);opacity:0;transition:all .25s;pointer-events:none}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* ── MISC ── */
+.empty-col{text-align:center;padding:24px 12px;color:var(--text3);font-size:12px}
+.btn-sm{padding:6px 13px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+.btn-sm:hover{border-color:var(--border2);color:var(--text);background:var(--bg3)}
+.btn-sm.accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-sm.accent:hover{opacity:.85}
+.code-font{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg4);padding:2px 6px;border-radius:4px;color:var(--accent2)}
+
+/* ── SETTINGS ── */
+.settings-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
+.settings-card h3{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text)}
+.key-input-row{display:flex;gap:8px}
+.key-input-row input{flex:1;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none}
+.key-input-row input:focus{border-color:var(--accent)}
+
+@media(max-width:768px){
+  .board-grid{grid-template-columns:1fr}
+  .ov-grid{grid-template-columns:1fr}
+  .chat-sidebar{display:none}
+  .sidebar{display:none}
+  .chat-layout{height:auto;flex-direction:column}
+  .chat-messages{max-height:50vh}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ SETUP SCREEN ════════════════ -->
+<div id="setup-screen">
+  <div class="setup-box">
+    <div class="setup-logo"><span>Dev</span>Pair</div>
+    <div class="setup-sub">AI-powered collaboration for coding partners. Set up once, then share the link with your teammate.</div>
+
+
+    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">who dat nigga</div>
+    <div class="setup-role-grid">
+      <div class="role-card selected" onclick="selectRole('dev1',this)">
+        <div class="icon">👤</div>
+        <div class="label">pash</div>
+      </div>
+      <div class="role-card" onclick="selectRole('dev2',this)">
+        <div class="icon">🤝</div>
+        <div class="label">void</div>
+      </div>
+    </div>
+
+    <div class="fg">
+      <label>aand lover 69</label>
+      <input id="s-project" placeholder="e.g. E-commerce App" value="My Project"/>
+    </div>
+
+    <div class="fg">
+      <label>Shared Groq API key (one for both of you)</label>
+      <input id="s-groq" type="password" placeholder="gsk_…"/>
+      <div class="hint">Get a free key at <a href="https://console.groq.com" target="_blank">console.groq.com</a> — one key for both; pash saves it first, void can leave blank</div>
+    </div>
+
+    <button class="btn-primary" onclick="startApp()">Enter DevPair →</button>
+  </div>
+</div>
+
+<!-- ════════════════ APP ════════════════ -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo"><span>Dev</span>Pair</div>
+    <div class="divider-v"></div>
+    <select class="project-select" id="project-select" onchange="switchProject(this.value)" title="Switch project"></select>
+    <input class="project-name" id="project-name-inp" value="My Project" onchange="saveProjectName()"/>
+    <div class="divider-v"></div>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('board',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Board
+      </button>
+      <button class="tab-btn" onclick="showTab('ai',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        AI Manager
+      </button>
+      <button class="tab-btn" onclick="showTab('overview',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Overview
+      </button>
+      <button class="tab-btn" onclick="showTab('settings',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07 10 10 0 0 0 19.07 4.93z"/></svg>
+        Settings
+      </button>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-live" id="sync-live"><span class="sync-pulse"></span><span id="sync-live-label">connecting…</span></div>
+      <button class="sync-btn" onclick="syncNow(true)" title="Force sync now">
+        <svg id="sync-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Sync
+      </button>
+      <div class="online-pill">
+        <div class="online-dot" id="partner-dot"></div>
+        <span id="partner-status">Partner offline</span>
+      </div>
+      <div class="user-chip me" id="me-chip">You</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ── BOARD PANEL ── -->
+    <div class="content">
+      <div id="panel-board" class="panel active">
+        <div class="board-header">
+          <div>
+            <div class="board-title">Task board</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:3px">Click a task to advance status · auto-saves to server · <span id="last-sync-label">never</span></div>
+          </div>
+          <div class="board-actions">
+            <button class="btn-sm" onclick="openTaskModal()">+ Add task</button>
+            <button class="btn-sm accent" onclick="aiSplitTasks()">✦ AI split tasks</button>
+          </div>
+        </div>
+        <div class="board-grid" id="board-grid"></div>
+      </div>
+
+      <!-- ── AI PANEL ── -->
+      <div id="panel-ai" class="panel">
+        <div class="chat-layout">
+          <div class="chat-main">
+            <div class="chat-messages" id="chat-messages"></div>
+            <div id="typing-ind" style="display:none">
+              <div class="msg">
+                <div class="msg-avatar ai">AI</div>
+                <div class="msg-bubble ai"><div class="typing-bubble"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>
+              </div>
+            </div>
+            <div class="chat-input-area">
+              <div class="quick-prompts">
+                <button class="qp" onclick="qPrompt('What should we focus on next based on our current tasks and deadlines?')">What to focus on?</button>
+                <button class="qp" onclick="qPrompt('Split all tasks fairly between us. Assign and set deadlines.')">Split tasks</button>
+                <button class="qp" onclick="qPrompt('Give us a daily standup: what was done, in progress, and blockers.')">Standup</button>
+                <button class="qp" onclick="qPrompt('Rate our team coordination out of 10 and give 3 actionable tips.')">Team tips</button>
+                <button class="qp" onclick="qPrompt('Build a 7-day sprint plan from our current backlog.')">Sprint plan</button>
+                <button class="qp" onclick="qPrompt('Which tasks are overdue or at risk? What should we do right now?')">Check risks</button>
+              </div>
+              <div class="chat-input-row">
+                <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask the AI manager anything…" onkeydown="chatKeydown(event)"></textarea>
+                <button class="send-btn" id="send-btn" onclick="sendChat()">Send →</button>
+              </div>
+            </div>
+          </div>
+          <div class="chat-sidebar">
+            <div>
+              <div class="sb-section-title">Context</div>
+              <div id="ai-context" style="font-size:12px;color:var(--text2);line-height:1.6"></div>
+            </div>
+            <div>
+              <div class="sb-section-title">Team</div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div class="user-chip me" style="border-radius:7px;font-size:12px" id="ctx-me-chip">You</div>
+                <div class="user-chip partner" style="border-radius:7px;font-size:12px" id="ctx-partner-chip">Partner</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── OVERVIEW PANEL ── -->
+      <div id="panel-overview" class="panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+          <div class="board-title">Team overview</div>
+          <button class="btn-sm accent" onclick="qPrompt('Give me a full project health report with concrete recommendations.');showTab('ai',null)">✦ AI health report</button>
+        </div>
+        <div class="ov-grid">
+          <div class="ov-card">
+            <div class="ov-card-title">Sprint progress</div>
+            <div class="big-num" id="ov-pct">0%</div>
+            <div class="prog-bar"><div class="prog-fill" id="ov-fill" style="width:0%"></div></div>
+            <div style="font-size:12px;color:var(--text2);margin-top:8px" id="ov-sub">0 of 0 tasks complete</div>
+          </div>
+          <div class="ov-card">
+            <div class="ov-card-title">Task distribution</div>
+            <div id="ov-split"></div>
+          </div>
+          <div class="ov-card">
+            <div class="ov-card-title">Upcoming deadlines</div>
+            <div id="ov-deadlines"></div>
+          </div>
+          <div class="ov-card">
+            <div class="ov-card-title">Stats</div>
+            <div id="ov-stats"></div>
+          </div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-card-title">Activity log</div>
+          <div id="ov-activity"></div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS PANEL ── -->
+      <div id="panel-settings" class="panel">
+        <div class="board-title" style="margin-bottom:18px">Settings</div>
+        <div class="settings-card">
+          <h3>Shared Groq API key</h3>
+          <div class="key-input-row">
+            <input type="password" id="set-groq" placeholder="gsk_…"/>
+            <button class="btn-sm accent" onclick="saveGroqKey()">Save to server</button>
+          </div>
+          <div style="font-size:12px;color:var(--text2);margin-top:8px">One key for pash and void — stored on your MilesWeb server in <span class="code-font">devpair_data/team.json</span>. Sent to Groq only when using AI chat.</div>
+        </div>
+        <div class="settings-card">
+          <h3>Projects</h3>
+          <div id="projects-list" style="margin-bottom:12px"></div>
+          <div class="key-input-row">
+            <input id="new-project-name" placeholder="New project name"/>
+            <button class="btn-sm accent" onclick="createNewProject()">+ Create</button>
+          </div>
+          <div style="font-size:12px;color:var(--text2);margin-top:8px">Each project saves tasks, chat, and activity on the server. Switch projects from the top bar.</div>
+        </div>
+        <div class="settings-card">
+          <h3>Realtime sync</h3>
+          <div style="font-size:13px;color:var(--text2);line-height:1.7">
+            Auto-syncs every <strong>5 seconds</strong> through <span class="code-font">sync.php</span>. Changes save to the server within 1 second. Both pash and void see the same board when on the same project.
+          </div>
+        </div>
+        <div class="settings-card">
+          <h3>Your profile</h3>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:10px">You are signed in as <strong id="set-role-label">pash</strong> (dev1/dev2 is set at first login).</div>
+        </div>
+        <div class="settings-card">
+          <h3>Danger zone</h3>
+          <button class="btn-sm" style="border-color:var(--red-border);color:var(--red)" onclick="clearTasks()">Clear all tasks</button>
+          <button class="btn-sm" style="border-color:var(--red-border);color:var(--red);margin-left:8px" onclick="clearAll()">Reset everything</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT SIDEBAR ── -->
+    <div class="sidebar" id="main-sidebar">
+      <div>
+        <div class="sb-section-title">Filter</div>
+        <button class="sb-filter-chip active" onclick="setFilter('all',this)">All tasks</button>
+        <button class="sb-filter-chip" onclick="setFilter('me',this)">My tasks</button>
+        <button class="sb-filter-chip" onclick="setFilter('partner',this)">Partner's tasks</button>
+        <button class="sb-filter-chip" onclick="setFilter('high',this)">High priority</button>
+        <button class="sb-filter-chip" onclick="setFilter('overdue',this)">Overdue</button>
+      </div>
+      <div>
+        <div class="sb-section-title">Quick stats</div>
+        <div class="sb-stat"><span>My active</span><span class="sb-stat-val" id="sb-me-active">0</span></div>
+        <div class="sb-stat"><span>Partner active</span><span class="sb-stat-val" id="sb-partner-active">0</span></div>
+        <div class="sb-stat"><span>Done this week</span><span class="sb-stat-val" id="sb-done-week">0</span></div>
+        <div class="sb-stat"><span>High priority</span><span class="sb-stat-val" style="color:var(--red)" id="sb-high">0</span></div>
+      </div>
+      <div style="margin-top:auto">
+        <button class="btn-sm" style="width:100%;justify-content:center" onclick="syncNow(true)">↺ Sync now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TASK MODAL ── -->
+<div class="modal-overlay" id="task-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Add task</div>
+    <div class="mfg"><label>Title *</label><input id="m-title" placeholder="e.g. Build login API"/></div>
+    <div class="mfg"><label>Description</label><textarea id="m-desc" placeholder="What needs to be done?"></textarea></div>
+    <div class="mfg-row">
+      <div class="mfg"><label>Assign to</label>
+        <select id="m-assign">
+          <option value="me">Me</option>
+          <option value="partner">Partner</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Priority</label>
+        <select id="m-priority">
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="mfg-row">
+      <div class="mfg"><label>Status</label>
+        <select id="m-status">
+          <option value="todo">To do</option>
+          <option value="in-progress">In progress</option>
+          <option value="done">Done</option>
+        </select>
+      </div>
+      <div class="mfg"><label>Deadline</label><input type="date" id="m-deadline"/></div>
+    </div>
+    <div class="mfg"><label>Notes</label><textarea id="m-notes" placeholder="Any additional notes, links, or context…" style="min-height:50px"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-modal btn-danger" id="modal-delete-btn" style="display:none;margin-right:auto" onclick="deleteTask()">Delete</button>
+      <button class="btn-modal btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-modal btn-save" onclick="saveTask()">Save task</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const DEV_NAMES = { dev1: 'pash', dev2: 'void' };
+
+let STATE = {
+  role: 'dev1',
+  name: 'pash',
+  projectId: '',
+  project: 'My Project',
+  projects: [],
+  groqKey: '',
+  tasks: [],
+  messages: [],
+  activity: [],
+  filter: 'all',
+  editTaskId: null,
+  lastSync: null,
+  version: 0,
+  activeTab: 'board',
+  partnerOnline: false,
+  partnerName: 'void',
+  partnerProjectId: '',
+};
+
+const MY_ROLE = () => STATE.role;
+const PARTNER_ROLE = () => STATE.role === 'dev1' ? 'dev2' : 'dev1';
+const PARTNER_NAME = () => DEV_NAMES[PARTNER_ROLE()];
+const MY_NAME = () => DEV_NAMES[MY_ROLE()];
+
+let saveTimer = null;
+let syncInFlight = false;
+
+async function api(action, payload = {}, method = 'POST') {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (method === 'POST') {
+    opts.body = JSON.stringify({ action, ...payload });
+  }
+  const url = method === 'GET'
+    ? `sync.php?action=${encodeURIComponent(action)}&${new URLSearchParams(payload).toString()}`
+    : 'sync.php';
+  const res = await fetch(url, opts);
+  return res.json();
+}
+
+/* ═══════════════════════════════════════════
+   SETUP
+═══════════════════════════════════════════ */
+let selectedRole = 'dev1';
+function selectRole(r, el) {
+  selectedRole = r;
+  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function startApp() {
+  const project = document.getElementById('s-project').value.trim() || 'My Project';
+  const groq = document.getElementById('s-groq').value.trim();
+
+  STATE.role = selectedRole;
+  STATE.name = MY_NAME();
+  STATE.project = project;
+  STATE.groqKey = groq;
+  STATE.version = 0;
+
+  try {
+    if (groq) await api('save_team', { groqKey: groq });
+
+    const team = await api('team', {}, 'GET');
+    if (team.groqKey) STATE.groqKey = team.groqKey;
+    STATE.projects = team.projects || [];
+
+    if (STATE.projects.length > 0) {
+      const latest = [...STATE.projects].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0];
+      await loadProjectFromServer(latest.id);
+      logActivity(`${STATE.name} joined the workspace`);
+      scheduleSave();
+    } else {
+      STATE.tasks = getDefaultTasks();
+      STATE.messages = [{ role: 'ai', text: `Hey ${STATE.name}! I'm your AI project manager for "${project}". I keep pash and void coordinated — tasks, deadlines, standups, all synced live. What should we tackle first?`, ts: Date.now() }];
+      STATE.activity = [{ text: `${STATE.name} created the workspace`, ts: Date.now() }];
+      STATE.version = 1;
+      const created = await api('create_project', {
+        name: project,
+        tasks: STATE.tasks,
+        messages: STATE.messages,
+        activity: STATE.activity,
+        updatedBy: STATE.role,
+      });
+      if (created.project) {
+        STATE.projectId = created.project.id;
+        STATE.version = created.project.version || 1;
+        STATE.projects = [{ id: created.project.id, name: project, updatedAt: Date.now() }];
+      }
+    }
+  } catch (e) {
+    toast('Server save failed — check sync.php is uploaded');
+  }
+
+  saveLocal();
+  initApp();
+}
+
+/* ═══════════════════════════════════════════
+   LOCAL STORAGE (profile + active project id)
+═══════════════════════════════════════════ */
+function saveLocal() {
+  localStorage.setItem('devpair_state', JSON.stringify({
+    role: STATE.role,
+    name: STATE.name,
+    projectId: STATE.projectId,
+    project: STATE.project,
+    projects: STATE.projects,
+    groqKey: STATE.groqKey,
+    tasks: STATE.tasks,
+    messages: STATE.messages.slice(-80),
+    activity: STATE.activity.slice(-50),
+    lastSync: STATE.lastSync,
+    version: STATE.version,
+  }));
+}
+
+function loadLocal() {
+  try {
+    const s = JSON.parse(localStorage.getItem('devpair_state'));
+    if (s) {
+      Object.assign(STATE, s);
+      STATE.name = DEV_NAMES[STATE.role] || STATE.name;
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+/* ═══════════════════════════════════════════
+   SERVER SYNC
+═══════════════════════════════════════════ */
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => pushProject(false), 800);
+}
+
+async function pushProject(showToast) {
+  if (!STATE.projectId) return;
+  try {
+    const res = await api('save_project', {
+      id: STATE.projectId,
+      name: STATE.project,
+      tasks: STATE.tasks,
+      messages: STATE.messages.slice(-80),
+      activity: STATE.activity.slice(-50),
+      version: STATE.version,
+      updatedBy: STATE.role,
+    });
+    if (res.conflict && res.project) {
+      applyProject(res.project, true);
+      toast('Partner updated — merged their changes');
+      return;
+    }
+    if (res.project) {
+      STATE.version = res.project.version;
+      STATE.lastSync = Date.now();
+      saveLocal();
+      updateSyncLabel();
+      if (showToast) toast('Saved to server ✓');
+    }
+  } catch (e) {
+    setSyncStatus(false);
+    if (showToast) toast('Save failed — check sync.php');
+  }
+}
+
+function applyProject(data, silent) {
+  if (!data) return;
+  const changed = data.version > STATE.version;
+  if (changed || silent) {
+    STATE.project = data.name || STATE.project;
+    STATE.tasks = data.tasks || STATE.tasks;
+    STATE.messages = data.messages || STATE.messages;
+    STATE.activity = data.activity || STATE.activity;
+    STATE.version = data.version || STATE.version;
+    document.getElementById('project-name-inp').value = STATE.project;
+    saveLocal();
+    render();
+    if (changed && !silent) toast(`${DEV_NAMES[data.updatedBy] || 'Partner'} updated the board`);
+  }
+}
+
+async function pullProject() {
+  if (!STATE.projectId) return;
+  try {
+    const data = await api('get_project', { id: STATE.projectId }, 'GET');
+    if (data.version > STATE.version) {
+      applyProject(data);
+    }
+    setSyncStatus(true);
+  } catch (e) {
+    setSyncStatus(false);
+  }
+}
+
+async function pullTeam() {
+  try {
+    const team = await api('team', {}, 'GET');
+    if (team.groqKey) STATE.groqKey = team.groqKey;
+    if (team.projects) STATE.projects = team.projects;
+    renderProjectSelect();
+    renderProjectsList();
+    document.getElementById('set-groq').value = STATE.groqKey || '';
+  } catch (e) {}
+}
+
+async function pushPresence() {
+  try {
+    await api('presence_push', {
+      role: STATE.role,
+      name: STATE.name,
+      projectId: STATE.projectId,
+      tab: STATE.activeTab,
+    });
+  } catch (e) {}
+}
+
+async function pullPresence() {
+  try {
+    const data = await api('presence_pull', { role: PARTNER_ROLE() }, 'GET');
+    STATE.partnerOnline = !!data.online;
+    STATE.partnerName = data.name || PARTNER_NAME();
+    STATE.partnerProjectId = data.projectId || '';
+    const dot = document.getElementById('partner-dot');
+    dot.className = 'online-dot' + (data.online ? '' : ' off');
+    const sameProject = data.projectId === STATE.projectId;
+    let status = data.online
+      ? `${STATE.partnerName} online${sameProject ? '' : ' · other project'}`
+      : `${PARTNER_NAME()} offline`;
+    document.getElementById('partner-status').textContent = status;
+    document.getElementById('ctx-partner-chip').textContent = PARTNER_NAME();
+  } catch (e) {}
+}
+
+async function syncNow(manual) {
+  if (syncInFlight) return;
+  syncInFlight = true;
+  const btn = document.querySelector('.sync-btn');
+  btn.classList.add('spinning');
+  try {
+    await pushProject(manual);
+    await pullProject();
+    await pullPresence();
+    await pullTeam();
+    if (manual) document.getElementById('last-sync-label').textContent = 'just now';
+  } catch (e) {
+    if (manual) toast('Sync failed — check sync.php is uploaded');
+  }
+  btn.classList.remove('spinning');
+  syncInFlight = false;
+}
+
+function setSyncStatus(ok) {
+  const el = document.getElementById('sync-live');
+  const label = document.getElementById('sync-live-label');
+  if (ok) {
+    el.classList.add('live');
+    label.textContent = 'live sync';
+  } else {
+    el.classList.remove('live');
+    label.textContent = 'offline';
+  }
+}
+
+function updateSyncLabel() {
+  document.getElementById('last-sync-label').textContent = STATE.lastSync ? timeAgo(STATE.lastSync) : 'never';
+}
+
+async function loadProjectFromServer(id) {
+  const data = await api('get_project', { id }, 'GET');
+  if (data.error) throw new Error(data.error);
+  STATE.projectId = data.id;
+  STATE.project = data.name;
+  STATE.tasks = data.tasks || [];
+  STATE.messages = data.messages?.length ? data.messages : [{ role: 'ai', text: `Switched to "${data.name}". What should pash and void work on here?`, ts: Date.now() }];
+  STATE.activity = data.activity || [];
+  STATE.version = data.version || 0;
+  document.getElementById('project-name-inp').value = STATE.project;
+  saveLocal();
+  render();
+}
+
+async function switchProject(id) {
+  if (!id || id === STATE.projectId) return;
+  try {
+    await pushProject(false);
+    await loadProjectFromServer(id);
+    await syncNow(false);
+    toast(`Switched to ${STATE.project}`);
+  } catch (e) {
+    toast('Could not load project');
+  }
+}
+
+async function createNewProject() {
+  const name = document.getElementById('new-project-name').value.trim();
+  if (!name) { toast('Enter a project name'); return; }
+  try {
+    await pushProject(false);
+    const res = await api('create_project', {
+      name,
+      tasks: [],
+      messages: [{ role: 'ai', text: `New project "${name}" — ready for pash and void.`, ts: Date.now() }],
+      activity: [{ text: `${STATE.name} created project "${name}"`, ts: Date.now() }],
+      updatedBy: STATE.role,
+    });
+    document.getElementById('new-project-name').value = '';
+    await pullTeam();
+    await loadProjectFromServer(res.project.id);
+    toast(`Created ${name}`);
+  } catch (e) {
+    toast('Could not create project');
+  }
+}
+
+async function deleteProject(id) {
+  const p = STATE.projects.find(x => x.id === id);
+  if (!p || !confirm(`Delete project "${p.name}" and all its data?`)) return;
+  try {
+    await api('delete_project', { id });
+    await pullTeam();
+    if (STATE.projectId === id) {
+      if (STATE.projects.length) {
+        await loadProjectFromServer(STATE.projects[0].id);
+      } else {
+        toast('No projects left — create one in Settings');
+      }
+    }
+    renderProjectsList();
+    toast('Project deleted');
+  } catch (e) {
+    toast('Delete failed');
+  }
+}
+
+function renderProjectSelect() {
+  const sel = document.getElementById('project-select');
+  sel.innerHTML = (STATE.projects || []).map(p =>
+    `<option value="${esc(p.id)}"${p.id === STATE.projectId ? ' selected' : ''}>${esc(p.name)}</option>`
+  ).join('');
+}
+
+function renderProjectsList() {
+  const el = document.getElementById('projects-list');
+  if (!el) return;
+  el.innerHTML = (STATE.projects || []).length
+    ? STATE.projects.map(p => `
+      <div class="stat-row">
+        <span class="stat-label">${esc(p.name)}${p.id === STATE.projectId ? ' <span style="color:var(--accent2)">(active)</span>' : ''}</span>
+        <span>
+          ${p.id !== STATE.projectId ? `<button class="btn-sm" onclick="switchProject('${esc(p.id)}')">Open</button>` : ''}
+          <button class="btn-sm" style="border-color:var(--red-border);color:var(--red);margin-left:4px" onclick="deleteProject('${esc(p.id)}')">Delete</button>
+        </span>
+      </div>`).join('')
+    : '<div style="font-size:12px;color:var(--text3)">No projects yet</div>';
+}
+
+// Realtime loop: pull every 5s, presence every 5s
+setInterval(() => {
+  if (document.getElementById('app').style.display === 'none') return;
+  pullProject();
+  pullPresence();
+  updateSyncLabel();
+}, 5000);
+
+setInterval(() => {
+  if (document.getElementById('app').style.display === 'none') return;
+  pushPresence();
+}, 5000);
+
+/* ═══════════════════════════════════════════
+   DEFAULT TASKS
+═══════════════════════════════════════════ */
+function getDefaultTasks() {
+  const d = n => { const x=new Date(); x.setDate(x.getDate()+n); return x.toISOString().split('T')[0]; };
+  return [
+    {id:'t1',title:'Set up repository',desc:'Init git repo, add .gitignore, branch strategy',assign:'me',priority:'high',status:'done',deadline:d(-2),notes:'',createdBy:'dev1',createdAt:Date.now()},
+    {id:'t2',title:'Design database schema',desc:'Tables for users, sessions, and core entities',assign:'me',priority:'high',status:'in-progress',deadline:d(1),notes:'',createdBy:'dev1',createdAt:Date.now()},
+    {id:'t3',title:'Build REST API',desc:'CRUD endpoints, auth middleware, error handling',assign:'partner',priority:'high',status:'in-progress',deadline:d(3),notes:'',createdBy:'dev1',createdAt:Date.now()},
+    {id:'t4',title:'Create UI components',desc:'Buttons, modals, forms, nav — reusable library',assign:'partner',priority:'medium',status:'todo',deadline:d(5),notes:'',createdBy:'dev1',createdAt:Date.now()},
+    {id:'t5',title:'Write unit tests',desc:'Core business logic coverage, edge cases',assign:'me',priority:'medium',status:'todo',deadline:d(7),notes:'',createdBy:'dev1',createdAt:Date.now()},
+    {id:'t6',title:'Deploy to staging',desc:'Docker setup, CI/CD pipeline, env config',assign:'both',priority:'low',status:'todo',deadline:d(12),notes:'',createdBy:'dev1',createdAt:Date.now()},
+  ];
+}
+
+/* ═══════════════════════════════════════════
+   INIT APP
+═══════════════════════════════════════════ */
+async function initApp() {
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  STATE.name = DEV_NAMES[STATE.role] || STATE.name;
+  document.getElementById('project-name-inp').value = STATE.project;
+  document.getElementById('me-chip').textContent = STATE.name;
+  document.getElementById('ctx-me-chip').textContent = STATE.name;
+  document.getElementById('set-groq').value = STATE.groqKey || '';
+  document.getElementById('set-role-label').textContent = `${STATE.name} (${STATE.role})`;
+
+  try {
+    await pullTeam();
+    if (STATE.projectId) {
+      await loadProjectFromServer(STATE.projectId);
+    } else if (STATE.projects.length) {
+      await loadProjectFromServer(STATE.projects[0].id);
+    }
+  } catch (e) {
+    /* use local cache if server unreachable */
+  }
+
+  renderProjectSelect();
+  renderProjectsList();
+  render();
+  await syncNow(false);
+}
+
+/* ═══════════════════════════════════════════
+   RENDER
+═══════════════════════════════════════════ */
+function render() {
+  renderBoard();
+  renderSidebar();
+  renderOverview();
+  renderChat();
+  renderAIContext();
+}
+
+function renderBoard() {
+  const filtered = STATE.tasks.filter(filterTask);
+  const cols = [
+    {id:'todo', label:'To do', cls:'col-todo'},
+    {id:'in-progress', label:'In progress', cls:'col-ip'},
+    {id:'done', label:'Done', cls:'col-done'},
+  ];
+  document.getElementById('board-grid').innerHTML = cols.map(col => {
+    const tasks = filtered.filter(t => t.status === col.id);
+    return `<div class="col ${col.cls}">
+      <div class="col-head">
+        <span class="col-label">${col.label}</span>
+        <span class="col-count">${tasks.length}</span>
+      </div>
+      <div class="task-list">
+        ${tasks.map(t => renderTaskCard(t)).join('')}
+        ${tasks.length === 0 ? `<div class="empty-col">No tasks here</div>` : ''}
+      </div>
+      ${col.id === 'todo' ? `<button class="add-task-btn" onclick="openTaskModal()">+ Add task</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderTaskCard(t) {
+  const dl = deadlineInfo(t.deadline);
+  const assignClass = t.assign === 'me' ? 'tag-me' : t.assign === 'partner' ? 'tag-partner' : 'tag-both';
+  const assignLabel = t.assign === 'me' ? STATE.name : t.assign === 'partner' ? PARTNER_NAME() : 'Both';
+  const advance = t.status === 'todo' ? '→ Start' : t.status === 'in-progress' ? '→ Done' : '↺ Reopen';
+  return `<div class="task-card ${t.status==='done'?'done-card':''}" onclick="cycleStatus('${t.id}')">
+    <button class="task-edit-btn" onclick="event.stopPropagation();openTaskModal('${t.id}')">edit</button>
+    <div class="task-top">
+      <div class="task-title">${esc(t.title)}</div>
+      <div class="pri-dot ${t.priority}" title="${t.priority} priority"></div>
+    </div>
+    ${t.desc ? `<div class="task-desc">${esc(t.desc)}</div>` : ''}
+    <div class="task-footer">
+      <span class="tag ${assignClass}">${assignLabel}</span>
+      ${t.deadline ? `<span class="tag tag-deadline ${dl.cls}">📅 ${dl.label}</span>` : ''}
+      <button class="advance-btn" onclick="event.stopPropagation();cycleStatus('${t.id}')">${advance}</button>
+    </div>
+  </div>`;
+}
+
+function deadlineInfo(d) {
+  if (!d) return {label:'',cls:''};
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dd = new Date(d); dd.setHours(0,0,0,0);
+  const diff = Math.round((dd-today)/(864e5));
+  if (diff < 0) return {label:`${Math.abs(diff)}d overdue`, cls:'overdue'};
+  if (diff === 0) return {label:'Today', cls:'soon'};
+  if (diff === 1) return {label:'Tomorrow', cls:'soon'};
+  return {label:`${diff}d`, cls:''};
+}
+
+function filterTask(t) {
+  if (STATE.filter === 'me') return t.assign === 'me' || t.assign === 'both';
+  if (STATE.filter === 'partner') return t.assign === 'partner' || t.assign === 'both';
+  if (STATE.filter === 'high') return t.priority === 'high';
+  if (STATE.filter === 'overdue') {
+    if (!t.deadline || t.status === 'done') return false;
+    return new Date(t.deadline) < new Date();
+  }
+  return true;
+}
+
+function renderSidebar() {
+  const active = STATE.tasks.filter(t => t.status !== 'done');
+  document.getElementById('sb-me-active').textContent = active.filter(t => t.assign==='me'||t.assign==='both').length;
+  document.getElementById('sb-partner-active').textContent = active.filter(t => t.assign==='partner'||t.assign==='both').length;
+  document.getElementById('sb-high').textContent = STATE.tasks.filter(t => t.priority==='high'&&t.status!=='done').length;
+  const weekAgo = Date.now() - 7*864e5;
+  document.getElementById('sb-done-week').textContent = STATE.tasks.filter(t => t.status==='done'&&(t.doneAt||0)>weekAgo).length;
+}
+
+function renderOverview() {
+  const done = STATE.tasks.filter(t=>t.status==='done').length;
+  const total = STATE.tasks.length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('ov-pct').textContent = pct+'%';
+  document.getElementById('ov-fill').style.width = pct+'%';
+  document.getElementById('ov-sub').textContent = `${done} of ${total} tasks complete`;
+
+  const me = STATE.tasks.filter(t=>t.assign==='me').length;
+  const partner = STATE.tasks.filter(t=>t.assign==='partner').length;
+  const both = STATE.tasks.filter(t=>t.assign==='both').length;
+  document.getElementById('ov-split').innerHTML = [
+    {l: STATE.name, v: me}, {l: PARTNER_NAME(), v: partner}, {l: 'Both', v: both}
+  ].map(r=>`<div class="stat-row"><span class="stat-label">${r.l}</span><span class="stat-val">${r.v} tasks</span></div>`).join('');
+
+  const upcoming = STATE.tasks.filter(t=>t.deadline&&t.status!=='done').sort((a,b)=>new Date(a.deadline)-new Date(b.deadline)).slice(0,5);
+  document.getElementById('ov-deadlines').innerHTML = upcoming.length
+    ? upcoming.map(t=>{
+        const dl=deadlineInfo(t.deadline);
+        const col=dl.cls==='overdue'?'var(--red)':dl.cls==='soon'?'var(--amber)':'var(--green)';
+        return `<div class="dl-item"><div class="dl-dot" style="background:${col}"></div><div class="dl-name">${esc(t.title)}</div><div class="dl-when">${dl.label}</div></div>`;
+      }).join('')
+    : '<div style="font-size:13px;color:var(--text3);padding:4px 0">No deadlines set</div>';
+
+  document.getElementById('ov-stats').innerHTML = [
+    {l:'High priority open', v:STATE.tasks.filter(t=>t.priority==='high'&&t.status!=='done').length, c:'var(--red)'},
+    {l:'In progress', v:STATE.tasks.filter(t=>t.status==='in-progress').length, c:'var(--amber)'},
+    {l:'Completed', v:done, c:'var(--green)'},
+    {l:'Total tasks', v:total},
+  ].map(r=>`<div class="stat-row"><span class="stat-label">${r.l}</span><span class="stat-val" style="${r.c?'color:'+r.c:''}">${r.v}</span></div>`).join('');
+
+  document.getElementById('ov-activity').innerHTML = STATE.activity.length
+    ? [...STATE.activity].reverse().slice(0,8).map(a=>`<div class="activity-item"><div class="activity-dot"></div><div>${esc(a.text)} <span style="color:var(--text3)">${timeAgo(a.ts)}</span></div></div>`).join('')
+    : '<div style="font-size:13px;color:var(--text3)">No activity yet</div>';
+}
+
+function renderChat() {
+  const el = document.getElementById('chat-messages');
+  el.innerHTML = STATE.messages.map(m => {
+    const who = m.role === 'ai' ? 'AI' : m.role === 'partner' ? 'P' : (STATE.name||'You')[0];
+    const cls = m.role === 'ai' ? 'ai' : m.role === 'partner' ? 'partner' : 'me';
+    const name = m.role === 'ai' ? 'AI Manager' : m.role === 'partner' ? PARTNER_NAME() : STATE.name;
+    return `<div class="msg">
+      <div class="msg-avatar ${cls}">${who}</div>
+      <div>
+        <div class="msg-bubble ${cls}">${m.text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>
+        <div class="msg-meta">${name} · ${timeAgo(m.ts)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderAIContext() {
+  const open = STATE.tasks.filter(t=>t.status!=='done').length;
+  const overdue = STATE.tasks.filter(t=>t.deadline&&t.status!=='done'&&new Date(t.deadline)<new Date()).length;
+  document.getElementById('ai-context').innerHTML =
+    `<strong>${open}</strong> open tasks<br><strong style="color:var(--red)">${overdue}</strong> overdue<br>Project: <strong>${STATE.project}</strong>`;
+  document.getElementById('ctx-partner-chip').textContent = PARTNER_NAME();
+}
+
+/* ═══════════════════════════════════════════
+   TASK ACTIONS
+═══════════════════════════════════════════ */
+function cycleStatus(id) {
+  const t = STATE.tasks.find(x=>x.id===id);
+  if (!t) return;
+  const order = ['todo','in-progress','done'];
+  const next = order[(order.indexOf(t.status)+1)%3];
+  const prev = t.status;
+  t.status = next;
+  if (next === 'done') t.doneAt = Date.now();
+  logActivity(`${STATE.name} moved "${t.title}" → ${next}`);
+  saveLocal(); scheduleSave(); render();
+  toast(`Task ${next === 'done' ? 'completed ✓' : next === 'in-progress' ? 'started' : 'moved to To do'}`);
+}
+
+let editTaskId = null;
+function openTaskModal(id) {
+  editTaskId = id || null;
+  const modal = document.getElementById('task-modal');
+  const delBtn = document.getElementById('modal-delete-btn');
+  if (id) {
+    const t = STATE.tasks.find(x=>x.id===id);
+    document.getElementById('modal-title').textContent = 'Edit task';
+    document.getElementById('m-title').value = t.title;
+    document.getElementById('m-desc').value = t.desc||'';
+    document.getElementById('m-assign').value = t.assign;
+    document.getElementById('m-priority').value = t.priority;
+    document.getElementById('m-status').value = t.status;
+    document.getElementById('m-deadline').value = t.deadline||'';
+    document.getElementById('m-notes').value = t.notes||'';
+    delBtn.style.display = 'block';
+  } else {
+    document.getElementById('modal-title').textContent = 'Add task';
+    document.getElementById('m-title').value = '';
+    document.getElementById('m-desc').value = '';
+    document.getElementById('m-assign').value = 'me';
+    document.getElementById('m-priority').value = 'medium';
+    document.getElementById('m-status').value = 'todo';
+    document.getElementById('m-deadline').value = '';
+    document.getElementById('m-notes').value = '';
+    delBtn.style.display = 'none';
+  }
+  modal.classList.add('open');
+  document.getElementById('m-title').focus();
+}
+
+function closeModal() {
+  document.getElementById('task-modal').classList.remove('open');
+}
+
+function saveTask() {
+  const title = document.getElementById('m-title').value.trim();
+  if (!title) { toast('Add a title first'); return; }
+
+  if (editTaskId) {
+    const t = STATE.tasks.find(x=>x.id===editTaskId);
+    t.title = title;
+    t.desc = document.getElementById('m-desc').value.trim();
+    t.assign = document.getElementById('m-assign').value;
+    t.priority = document.getElementById('m-priority').value;
+    t.status = document.getElementById('m-status').value;
+    t.deadline = document.getElementById('m-deadline').value;
+    t.notes = document.getElementById('m-notes').value.trim();
+    logActivity(`${STATE.name} updated "${title}"`);
+  } else {
+    const newTask = {
+      id: 't'+Date.now(), title,
+      desc: document.getElementById('m-desc').value.trim(),
+      assign: document.getElementById('m-assign').value,
+      priority: document.getElementById('m-priority').value,
+      status: document.getElementById('m-status').value,
+      deadline: document.getElementById('m-deadline').value,
+      notes: document.getElementById('m-notes').value.trim(),
+      createdBy: MY_ROLE(), createdAt: Date.now()
+    };
+    STATE.tasks.push(newTask);
+    logActivity(`${STATE.name} added "${title}"`);
+  }
+  closeModal(); saveLocal(); scheduleSave(); render();
+  toast(editTaskId ? 'Task updated' : 'Task added');
+}
+
+function deleteTask() {
+  if (!editTaskId) return;
+  const t = STATE.tasks.find(x=>x.id===editTaskId);
+  if (!confirm(`Delete "${t?.title}"?`)) return;
+  STATE.tasks = STATE.tasks.filter(x=>x.id!==editTaskId);
+  logActivity(`${STATE.name} deleted "${t?.title}"`);
+  closeModal(); saveLocal(); scheduleSave(); render();
+  toast('Task deleted');
+}
+
+function clearTasks() {
+  if (!confirm('Clear all tasks? This cannot be undone.')) return;
+  STATE.tasks = [];
+  saveLocal(); scheduleSave(); render();
+  toast('All tasks cleared');
+}
+
+function clearAll() {
+  if (!confirm('Reset everything and go back to setup?')) return;
+  localStorage.removeItem('devpair_state');
+  location.reload();
+}
+
+/* ═══════════════════════════════════════════
+   AI CHAT (GROQ)
+═══════════════════════════════════════════ */
+function qPrompt(text) {
+  document.getElementById('chat-input').value = text;
+  showTab('ai', document.querySelectorAll('.tab-btn')[1]);
+  sendChat();
+}
+
+function aiSplitTasks() {
+  qPrompt('Split all our current tasks fairly between me and my partner. Assign each task, set realistic deadlines, and explain your reasoning.');
+}
+
+function chatKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  if (!STATE.groqKey) { toast('Add your Groq API key in Settings'); return; }
+
+  inp.value = '';
+  const msgId = 'msg'+Date.now();
+  STATE.messages.push({id:msgId, role:'user', text, ts:Date.now()});
+  saveLocal(); scheduleSave();
+  renderChat();
+
+  document.getElementById('typing-ind').style.display = 'block';
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('chat-messages').scrollTop = 99999;
+
+  const taskSummary = STATE.tasks.map(t =>
+    `[${t.status}] ${t.title} | assign:${t.assign} | priority:${t.priority} | deadline:${t.deadline||'none'}`
+  ).join('\n');
+
+  const done = STATE.tasks.filter(t=>t.status==='done').length;
+  const total = STATE.tasks.length;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${STATE.groqKey}`
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 800,
+        messages: [
+          {role:'system', content:`You are a sharp, direct AI project manager for a 2-developer team working on "${STATE.project}". Developer 1 is **pash**. Developer 2 is **void**. The person chatting right now is **${STATE.name}**. Help split tasks fairly between pash and void, set deadlines, track progress, run standups, and improve coordination. Be concise and practical. Use bullet points and bold text where helpful. Current project status: ${done}/${total} tasks done.\n\nCurrent tasks:\n${taskSummary||'No tasks yet.'}`},
+          ...STATE.messages.slice(-12).filter(m=>m.role!=='ai'||true).map(m=>({
+            role: m.role==='ai'?'assistant':'user',
+            content: m.text
+          })),
+        ]
+      })
+    });
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'Sorry, I had trouble with that. Try again.';
+    document.getElementById('typing-ind').style.display = 'none';
+    STATE.messages.push({id:'ai'+Date.now(), role:'ai', text:reply, ts:Date.now()});
+    saveLocal(); scheduleSave(); renderChat();
+  } catch(e) {
+    document.getElementById('typing-ind').style.display = 'none';
+    STATE.messages.push({role:'ai', text:"Couldn't reach Groq. Check your API key in Settings and try again.", ts:Date.now()});
+    renderChat();
+  }
+  document.getElementById('send-btn').disabled = false;
+}
+
+/* ═══════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════ */
+async function saveGroqKey() {
+  STATE.groqKey = document.getElementById('set-groq').value.trim();
+  saveLocal();
+  try {
+    await api('save_team', { groqKey: STATE.groqKey });
+    toast('Shared API key saved to server');
+  } catch (e) {
+    toast('Server save failed — check sync.php');
+  }
+}
+
+function saveProjectName() {
+  STATE.project = document.getElementById('project-name-inp').value.trim() || 'My Project';
+  saveLocal();
+  scheduleSave();
+  renderProjectSelect();
+}
+
+/* ═══════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════ */
+function showTab(name, btn) {
+  STATE.activeTab = name;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const sidebar = document.getElementById('main-sidebar');
+  sidebar.style.display = (name==='board'||name==='overview') ? 'flex' : 'none';
+}
+
+function setFilter(f, el) {
+  STATE.filter = f;
+  document.querySelectorAll('.sb-filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderBoard();
+}
+
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function logActivity(text) {
+  STATE.activity.push({text, ts: Date.now()});
+  if (STATE.activity.length > 50) STATE.activity = STATE.activity.slice(-50);
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Math.floor((Date.now()-ts)/1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60)+'m ago';
+  if (diff < 86400) return Math.floor(diff/3600)+'h ago';
+  return Math.floor(diff/86400)+'d ago';
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ═══════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════ */
+(function boot() {
+  if (loadLocal() && STATE.role) {
+    initApp();
+  }
+})();
+</script>
+</body>
+</html>
