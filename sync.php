@@ -45,6 +45,7 @@ function slug_id($s) {
 function team_defaults() {
     return [
         'groqKey' => '',
+        'members' => [],
         'projects' => [],
         'updatedAt' => 0,
     ];
@@ -102,6 +103,7 @@ switch ($action) {
         echo json_encode([
             'groqKey' => $team['groqKey'] ?? '',
             'hasGroqKey' => !empty($team['groqKey']),
+            'members' => is_array($team['members'] ?? null) ? $team['members'] : [],
             'projects' => $team['projects'] ?? [],
             'updatedAt' => $team['updatedAt'] ?? 0,
         ]);
@@ -112,8 +114,11 @@ switch ($action) {
         if (isset($body['groqKey'])) {
             $team['groqKey'] = substr($body['groqKey'], 0, 200);
         }
+        if (isset($body['members']) && is_array($body['members'])) {
+            $team['members'] = $body['members'];
+        }
         save_team($team);
-        echo json_encode(['ok' => true, 'hasGroqKey' => !empty($team['groqKey'])]);
+        echo json_encode(['ok' => true, 'hasGroqKey' => !empty($team['groqKey']), 'members' => $team['members']]);
         break;
 
     /* ── Projects ── */
@@ -227,7 +232,7 @@ switch ($action) {
 
     /* ── Presence (pash / void online status) ── */
     case 'presence_push':
-        $role = sanitize_role($body['role'] ?? 'dev1');
+        $role = preg_replace('/[^a-zA-Z0-9\-_]/', '', $body['role'] ?? 'member');
         $name = substr($body['name'] ?? '', 0, 50);
         $projectId = preg_replace('/[^a-z0-9\-_]/', '', $body['projectId'] ?? '');
         $data = [
@@ -237,19 +242,19 @@ switch ($action) {
             'tab' => substr($body['tab'] ?? 'board', 0, 20),
             'ts' => time() * 1000,
         ];
-        write_json(DATA_DIR . $role . '.json', $data);
+        write_json(DATA_DIR . 'presence_' . $role . '.json', $data);
         echo json_encode(['ok' => true, 'ts' => $data['ts']]);
         break;
 
     case 'presence_pull':
-        $role = sanitize_role($_GET['role'] ?? 'dev2');
-        $file = DATA_DIR . $role . '.json';
+        $role = preg_replace('/[^a-zA-Z0-9\-_]/', '', $_GET['role'] ?? 'member');
+        $file = DATA_DIR . 'presence_' . $role . '.json';
         if (file_exists($file)) {
             $data = read_json($file);
             $data['online'] = isset($data['ts']) && (time() * 1000 - $data['ts']) < 120000;
             echo json_encode($data);
         } else {
-            echo json_encode(['online' => false, 'name' => $role === 'dev1' ? 'pash' : 'void']);
+            echo json_encode(['online' => false, 'name' => $role]);
         }
         break;
 

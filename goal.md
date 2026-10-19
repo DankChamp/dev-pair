@@ -1,0 +1,2 @@
+now scrap the whole hardcoded 2 devs idea, the final goal is to have a proper workspace for multiple devs thats perfect for working on the same projects and codebase. in it there should be a system like git but always commiting in a single brach and with good version control so we can undo specific changes but no diffrent branch of pull request shit involved. 
+make a profile section where the dev can write about what they can do so the intergrated AI can judge and split tasks, give deadlines according to it. 

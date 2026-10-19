@@ -52,8 +52,9 @@ a{color:var(--accent2);text-decoration:none}
 .role-card .desc{font-size:11px;color:var(--text2);margin-top:3px}
 .fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
 .fg label{font-size:12px;color:var(--text2);font-weight:500}
-.fg input{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
-.fg input:focus{border-color:var(--accent)}
+.fg input,.fg textarea{padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg3);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.fg input:focus,.fg textarea:focus{border-color:var(--accent)}
+.fg textarea{resize:vertical;min-height:70px;font-family:'Inter',sans-serif}
 .fg .hint{font-size:11px;color:var(--text3)}
 .btn-primary{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .15s}
 .btn-primary:hover{opacity:.85}
@@ -232,6 +233,18 @@ a{color:var(--accent2);text-decoration:none}
 .btn-sm.accent:hover{opacity:.85}
 .code-font{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg4);padding:2px 6px;border-radius:4px;color:var(--accent2)}
 
+/* ── MEMBERS / PROFILES ── */
+.member-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:12px}
+.member-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.member-info{flex:1}
+.member-name{font-size:14px;font-weight:600;color:var(--text)}
+.member-me{color:var(--accent2)}
+.member-skills{font-size:12px;color:var(--text2);margin-top:3px}
+.member-chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;margin-bottom:4px}
+.member-chip.me{border-color:var(--accent-border);color:var(--accent2);background:var(--accent-bg)}
+.team-section{margin-bottom:18px}
+.team-section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin-bottom:8px}
+
 /* ── SETTINGS ── */
 .settings-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px}
 .settings-card h3{font-size:14px;font-weight:600;margin-bottom:14px;color:var(--text)}
@@ -255,30 +268,28 @@ a{color:var(--accent2);text-decoration:none}
 <div id="setup-screen">
   <div class="setup-box">
     <div class="setup-logo"><span>Dev</span>Pair</div>
-    <div class="setup-sub">AI-powered collaboration for coding partners. Set up once, then share the link with your teammate.</div>
+    <div class="setup-sub">AI-powered collaboration for a team of developers. Set up your profile, then share the link with your teammates.</div>
 
 
-    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">who dat nigga</div>
-    <div class="setup-role-grid">
-      <div class="role-card selected" onclick="selectRole('dev1',this)">
-        <div class="icon">👤</div>
-        <div class="label">pash</div>
-      </div>
-      <div class="role-card" onclick="selectRole('dev2',this)">
-        <div class="icon">🤝</div>
-        <div class="label">void</div>
-      </div>
+    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">Your name</div>
+    <div class="fg">
+      <input id="s-name" placeholder="e.g. Alex"/>
+    </div>
+
+    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">What can you do? (skills)</div>
+    <div class="fg">
+      <textarea id="s-skills" placeholder="e.g. React, Node.js, UI design, APIs…"></textarea>
     </div>
 
     <div class="fg">
-      <label>aand lover 69</label>
+      <label>Project name</label>
       <input id="s-project" placeholder="e.g. E-commerce App" value="My Project"/>
     </div>
 
     <div class="fg">
       <label>Shared Groq API key (one for both of you)</label>
       <input id="s-groq" type="password" placeholder="gsk_…"/>
-      <div class="hint">Get a free key at <a href="https://console.groq.com" target="_blank">console.groq.com</a> — one key for both; pash saves it first, void can leave blank</div>
+      <div class="hint">Get a free key at <a href="https://console.groq.com" target="_blank">console.groq.com</a> — one shared key for the whole team</div>
     </div>
 
     <button class="btn-primary" onclick="startApp()">Enter DevPair →</button>
@@ -428,7 +439,7 @@ a{color:var(--accent2);text-decoration:none}
             <input type="password" id="set-groq" placeholder="gsk_…"/>
             <button class="btn-sm accent" onclick="saveGroqKey()">Save to server</button>
           </div>
-          <div style="font-size:12px;color:var(--text2);margin-top:8px">One key for pash and void — stored on your MilesWeb server in <span class="code-font">devpair_data/team.json</span>. Sent to Groq only when using AI chat.</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:8px">One shared key for the team — stored on your MilesWeb server in <span class="code-font">devpair_data/team.json</span>. Sent to Groq only when using AI chat.</div>
         </div>
         <div class="settings-card">
           <h3>Projects</h3>
@@ -442,13 +453,22 @@ a{color:var(--accent2);text-decoration:none}
         <div class="settings-card">
           <h3>Realtime sync</h3>
           <div style="font-size:13px;color:var(--text2);line-height:1.7">
-            Auto-syncs every <strong>5 seconds</strong> through <span class="code-font">sync.php</span>. Changes save to the server within 1 second. Both pash and void see the same board when on the same project.
+            Auto-syncs every <strong>5 seconds</strong> through <span class="code-font">sync.php</span>. Changes save to the server within 1 second. All teammates on the same project see the same board.
           </div>
         </div>
         <div class="settings-card">
           <h3>Your profile</h3>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:10px">You are signed in as <strong id="set-role-label">pash</strong> (dev1/dev2 is set at first login).</div>
+          <div class="mfg"><label>Name</label><input id="set-profile-name" placeholder="Your name"/></div>
+          <div class="mfg"><label>What can you do? (skills)</label><textarea id="set-profile-skills" placeholder="e.g. React, Node.js, UI design, APIs…"></textarea></div>
+          <button class="btn-sm accent" onclick="saveProfile()">Save profile</button>
+          <div style="font-size:12px;color:var(--text2);margin-top:8px">Your profile is shared with the team so the AI can assign tasks based on skills.</div>
         </div>
+
+        <div class="team-section">
+          <div class="team-section-title">Team members</div>
+          <div id="team-members-list"></div>
+        </div>
+
         <div class="settings-card">
           <h3>Danger zone</h3>
           <button class="btn-sm" style="border-color:var(--red-border);color:var(--red)" onclick="clearTasks()">Clear all tasks</button>
@@ -528,11 +548,10 @@ a{color:var(--accent2);text-decoration:none}
 /* ═══════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════ */
-const DEV_NAMES = { dev1: 'pash', dev2: 'void' };
-
 let STATE = {
-  role: 'dev1',
-  name: 'pash',
+  myMemberId: null,
+  myName: '',
+  members: [],
   projectId: '',
   project: 'My Project',
   projects: [],
@@ -546,14 +565,23 @@ let STATE = {
   version: 0,
   activeTab: 'board',
   partnerOnline: false,
-  partnerName: 'void',
-  partnerProjectId: '',
 };
 
-const MY_ROLE = () => STATE.role;
-const PARTNER_ROLE = () => STATE.role === 'dev1' ? 'dev2' : 'dev1';
-const PARTNER_NAME = () => DEV_NAMES[PARTNER_ROLE()];
-const MY_NAME = () => DEV_NAMES[MY_ROLE()];
+const MY_MEMBER = () => STATE.members.find(m => m.id === STATE.myMemberId) || {};
+const MY_NAME = () => MY_MEMBER().name || STATE.myName || 'You';
+const MEMBER_NAME = (id) => {
+  const m = STATE.members.find(x => x.id === id);
+  return m ? m.name : id || 'Unknown';
+};
+const MEMBER_COLOR = (id) => {
+  const m = STATE.members.find(x => x.id === id);
+  return m ? m.color : '#6366f1';
+};
+const MY_MEMBER_ID = () => STATE.myMemberId;
+const OTHER_MEMBERS = () => STATE.members.filter(m => m.id !== STATE.myMemberId);
+
+const MEMBER_COLORS = ['#6366f1','#22c55e','#f59e0b','#ef4444','#a855f7','#06b6d4','#84cc16','#f97316'];
+function memberColorForIndex(i){ return MEMBER_COLORS[i % MEMBER_COLORS.length]; }
 
 let saveTimer = null;
 let syncInFlight = false;
@@ -573,19 +601,14 @@ async function api(action, payload = {}, method = 'POST') {
 /* ═══════════════════════════════════════════
    SETUP
 ═══════════════════════════════════════════ */
-let selectedRole = 'dev1';
-function selectRole(r, el) {
-  selectedRole = r;
-  document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-}
-
 async function startApp() {
+  const name = document.getElementById('s-name').value.trim() || 'Developer';
+  const skills = document.getElementById('s-skills').value.trim();
   const project = document.getElementById('s-project').value.trim() || 'My Project';
   const groq = document.getElementById('s-groq').value.trim();
 
-  STATE.role = selectedRole;
-  STATE.name = MY_NAME();
+  STATE.myMemberId = 'dev' + Date.now();
+  STATE.myName = name;
   STATE.project = project;
   STATE.groqKey = groq;
   STATE.version = 0;
@@ -595,24 +618,45 @@ async function startApp() {
 
     const team = await api('team', {}, 'GET');
     if (team.groqKey) STATE.groqKey = team.groqKey;
+    STATE.members = team.members || [];
     STATE.projects = team.projects || [];
+
+    const memberIndex = STATE.members.length;
+    const memberColor = memberColorForIndex(memberIndex);
+
+    // Add self to team if not already present (by id or name)
+    const existing = STATE.members.find(m => m.id === STATE.myMemberId || m.name === name);
+    if (!existing) {
+      STATE.members.push({
+        id: STATE.myMemberId,
+        name: name,
+        skills: skills,
+        color: memberColor,
+      });
+      await api('save_team', { members: STATE.members, groqKey: STATE.groqKey });
+    } else {
+      // Rejoining: keep skills/color if not set
+      existing.skills = skills || existing.skills;
+      existing.color = existing.color || memberColor;
+      await api('save_team', { members: STATE.members, groqKey: STATE.groqKey });
+    }
 
     if (STATE.projects.length > 0) {
       const latest = [...STATE.projects].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0];
       await loadProjectFromServer(latest.id);
-      logActivity(`${STATE.name} joined the workspace`);
+      logActivity(`${MY_NAME()} joined the workspace`);
       scheduleSave();
     } else {
       STATE.tasks = getDefaultTasks();
-      STATE.messages = [{ role: 'ai', text: `Hey ${STATE.name}! I'm your AI project manager for "${project}". I keep pash and void coordinated — tasks, deadlines, standups, all synced live. What should we tackle first?`, ts: Date.now() }];
-      STATE.activity = [{ text: `${STATE.name} created the workspace`, ts: Date.now() }];
+      STATE.messages = [{ role: 'ai', text: `Hey ${MY_NAME()}! I'm your AI project manager for "${project}". I keep the team coordinated — tasks, deadlines, standups, all synced live. What should we tackle first?`, ts: Date.now() }];
+      STATE.activity = [{ text: `${MY_NAME()} created the workspace`, ts: Date.now() }];
       STATE.version = 1;
       const created = await api('create_project', {
         name: project,
         tasks: STATE.tasks,
         messages: STATE.messages,
         activity: STATE.activity,
-        updatedBy: STATE.role,
+        updatedBy: STATE.myMemberId,
       });
       if (created.project) {
         STATE.projectId = created.project.id;
@@ -633,8 +677,9 @@ async function startApp() {
 ═══════════════════════════════════════════ */
 function saveLocal() {
   localStorage.setItem('devpair_state', JSON.stringify({
-    role: STATE.role,
-    name: STATE.name,
+    myMemberId: STATE.myMemberId,
+    myName: STATE.myName,
+    members: STATE.members,
     projectId: STATE.projectId,
     project: STATE.project,
     projects: STATE.projects,
@@ -652,7 +697,6 @@ function loadLocal() {
     const s = JSON.parse(localStorage.getItem('devpair_state'));
     if (s) {
       Object.assign(STATE, s);
-      STATE.name = DEV_NAMES[STATE.role] || STATE.name;
       return true;
     }
   } catch (e) {}
@@ -677,7 +721,7 @@ async function pushProject(showToast) {
       messages: STATE.messages.slice(-80),
       activity: STATE.activity.slice(-50),
       version: STATE.version,
-      updatedBy: STATE.role,
+      updatedBy: STATE.myMemberId,
     });
     if (res.conflict && res.project) {
       applyProject(res.project, true);
@@ -709,7 +753,7 @@ function applyProject(data, silent) {
     document.getElementById('project-name-inp').value = STATE.project;
     saveLocal();
     render();
-    if (changed && !silent) toast(`${DEV_NAMES[data.updatedBy] || 'Partner'} updated the board`);
+    if (changed && !silent) toast(`${MEMBER_NAME(data.updatedBy) || 'Partner'} updated the board`);
   }
 }
 
@@ -740,8 +784,8 @@ async function pullTeam() {
 async function pushPresence() {
   try {
     await api('presence_push', {
-      role: STATE.role,
-      name: STATE.name,
+      role: STATE.myMemberId,
+      name: MY_NAME(),
       projectId: STATE.projectId,
       tab: STATE.activeTab,
     });
@@ -750,18 +794,30 @@ async function pushPresence() {
 
 async function pullPresence() {
   try {
-    const data = await api('presence_pull', { role: PARTNER_ROLE() }, 'GET');
-    STATE.partnerOnline = !!data.online;
-    STATE.partnerName = data.name || PARTNER_NAME();
-    STATE.partnerProjectId = data.projectId || '';
+    const others = STATE.members.filter(m => m.id !== STATE.myMemberId);
+    let anyOnline = false;
+    let onlineName = '';
+    let onlineProjectId = '';
+    for (const m of others) {
+      const data = await api('presence_pull', { role: m.id }, 'GET');
+      if (data.online) {
+        anyOnline = true;
+        onlineName = data.name || m.name;
+        onlineProjectId = data.projectId || '';
+        break;
+      }
+    }
+    STATE.partnerOnline = anyOnline;
+    STATE.partnerName = onlineName;
+    STATE.partnerProjectId = onlineProjectId;
     const dot = document.getElementById('partner-dot');
-    dot.className = 'online-dot' + (data.online ? '' : ' off');
-    const sameProject = data.projectId === STATE.projectId;
-    let status = data.online
-      ? `${STATE.partnerName} online${sameProject ? '' : ' · other project'}`
-      : `${PARTNER_NAME()} offline`;
+    dot.className = 'online-dot' + (anyOnline ? '' : ' off');
+    const sameProject = onlineProjectId === STATE.projectId;
+    let status = anyOnline
+      ? `${onlineName} online${sameProject ? '' : ' · other project'}`
+      : 'Teammates offline';
     document.getElementById('partner-status').textContent = status;
-    document.getElementById('ctx-partner-chip').textContent = PARTNER_NAME();
+    document.getElementById('ctx-partner-chip').textContent = `${STATE.members.length} members`;
   } catch (e) {}
 }
 
@@ -805,7 +861,7 @@ async function loadProjectFromServer(id) {
   STATE.projectId = data.id;
   STATE.project = data.name;
   STATE.tasks = data.tasks || [];
-  STATE.messages = data.messages?.length ? data.messages : [{ role: 'ai', text: `Switched to "${data.name}". What should pash and void work on here?`, ts: Date.now() }];
+  STATE.messages = data.messages?.length ? data.messages : [{ role: 'ai', text: `Switched to "${data.name}". What should the team work on here?`, ts: Date.now() }];
   STATE.activity = data.activity || [];
   STATE.version = data.version || 0;
   document.getElementById('project-name-inp').value = STATE.project;
@@ -833,9 +889,9 @@ async function createNewProject() {
     const res = await api('create_project', {
       name,
       tasks: [],
-      messages: [{ role: 'ai', text: `New project "${name}" — ready for pash and void.`, ts: Date.now() }],
-      activity: [{ text: `${STATE.name} created project "${name}"`, ts: Date.now() }],
-      updatedBy: STATE.role,
+      messages: [{ role: 'ai', text: `New project "${name}" — ready for the team.`, ts: Date.now() }],
+      activity: [{ text: `${MY_NAME()} created project "${name}"`, ts: Date.now() }],
+      updatedBy: STATE.myMemberId,
     });
     document.getElementById('new-project-name').value = '';
     await pullTeam();
@@ -907,12 +963,12 @@ setInterval(() => {
 function getDefaultTasks() {
   const d = n => { const x=new Date(); x.setDate(x.getDate()+n); return x.toISOString().split('T')[0]; };
   return [
-    {id:'t1',title:'Set up repository',desc:'Init git repo, add .gitignore, branch strategy',assign:'me',priority:'high',status:'done',deadline:d(-2),notes:'',createdBy:'dev1',createdAt:Date.now()},
-    {id:'t2',title:'Design database schema',desc:'Tables for users, sessions, and core entities',assign:'me',priority:'high',status:'in-progress',deadline:d(1),notes:'',createdBy:'dev1',createdAt:Date.now()},
-    {id:'t3',title:'Build REST API',desc:'CRUD endpoints, auth middleware, error handling',assign:'partner',priority:'high',status:'in-progress',deadline:d(3),notes:'',createdBy:'dev1',createdAt:Date.now()},
-    {id:'t4',title:'Create UI components',desc:'Buttons, modals, forms, nav — reusable library',assign:'partner',priority:'medium',status:'todo',deadline:d(5),notes:'',createdBy:'dev1',createdAt:Date.now()},
-    {id:'t5',title:'Write unit tests',desc:'Core business logic coverage, edge cases',assign:'me',priority:'medium',status:'todo',deadline:d(7),notes:'',createdBy:'dev1',createdAt:Date.now()},
-    {id:'t6',title:'Deploy to staging',desc:'Docker setup, CI/CD pipeline, env config',assign:'both',priority:'low',status:'todo',deadline:d(12),notes:'',createdBy:'dev1',createdAt:Date.now()},
+    {id:'t1',title:'Set up repository',desc:'Init git repo, add .gitignore, branch strategy',assign:STATE.myMemberId,priority:'high',status:'done',deadline:d(-2),notes:'',createdBy:STATE.myMemberId,createdAt:Date.now()},
+    {id:'t2',title:'Design database schema',desc:'Tables for users, sessions, and core entities',assign:STATE.myMemberId,priority:'high',status:'in-progress',deadline:d(1),notes:'',createdBy:STATE.myMemberId,createdAt:Date.now()},
+    {id:'t3',title:'Build REST API',desc:'CRUD endpoints, auth middleware, error handling',assign:'both',priority:'high',status:'in-progress',deadline:d(3),notes:'',createdBy:STATE.myMemberId,createdAt:Date.now()},
+    {id:'t4',title:'Create UI components',desc:'Buttons, modals, forms, nav — reusable library',assign:'both',priority:'medium',status:'todo',deadline:d(5),notes:'',createdBy:STATE.myMemberId,createdAt:Date.now()},
+    {id:'t5',title:'Write unit tests',desc:'Core business logic coverage, edge cases',assign:STATE.myMemberId,priority:'medium',status:'todo',deadline:d(7),notes:'',createdBy:STATE.myMemberId,createdAt:Date.now()},
+    {id:'t6',title:'Deploy to staging',desc:'Docker setup, CI/CD pipeline, env config',assign:'both',priority:'low',status:'todo',deadline:d(12),notes:'',createdBy:STATE.myMemberId,createdAt:Date.now()},
   ];
 }
 
@@ -923,12 +979,11 @@ async function initApp() {
   document.getElementById('setup-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
 
-  STATE.name = DEV_NAMES[STATE.role] || STATE.name;
   document.getElementById('project-name-inp').value = STATE.project;
-  document.getElementById('me-chip').textContent = STATE.name;
-  document.getElementById('ctx-me-chip').textContent = STATE.name;
+  document.getElementById('me-chip').textContent = MY_NAME();
+  document.getElementById('ctx-me-chip').textContent = MY_NAME();
   document.getElementById('set-groq').value = STATE.groqKey || '';
-  document.getElementById('set-role-label').textContent = `${STATE.name} (${STATE.role})`;
+  document.getElementById('set-role-label').textContent = MY_NAME();
 
   try {
     await pullTeam();
@@ -956,6 +1011,7 @@ function render() {
   renderOverview();
   renderChat();
   renderAIContext();
+  renderTeamMembers();
 }
 
 function renderBoard() {
@@ -983,8 +1039,8 @@ function renderBoard() {
 
 function renderTaskCard(t) {
   const dl = deadlineInfo(t.deadline);
-  const assignClass = t.assign === 'me' ? 'tag-me' : t.assign === 'partner' ? 'tag-partner' : 'tag-both';
-  const assignLabel = t.assign === 'me' ? STATE.name : t.assign === 'partner' ? PARTNER_NAME() : 'Both';
+  const assignClass = t.assign === STATE.myMemberId ? 'tag-me' : t.assign === 'both' ? 'tag-both' : 'tag-partner';
+  const assignLabel = t.assign === 'both' ? 'Both' : MEMBER_NAME(t.assign);
   const advance = t.status === 'todo' ? '→ Start' : t.status === 'in-progress' ? '→ Done' : '↺ Reopen';
   return `<div class="task-card ${t.status==='done'?'done-card':''}" onclick="cycleStatus('${t.id}')">
     <button class="task-edit-btn" onclick="event.stopPropagation();openTaskModal('${t.id}')">edit</button>
@@ -1013,8 +1069,8 @@ function deadlineInfo(d) {
 }
 
 function filterTask(t) {
-  if (STATE.filter === 'me') return t.assign === 'me' || t.assign === 'both';
-  if (STATE.filter === 'partner') return t.assign === 'partner' || t.assign === 'both';
+  if (STATE.filter === 'me') return t.assign === STATE.myMemberId || t.assign === 'both';
+  if (STATE.filter === 'partner') return t.assign !== STATE.myMemberId && t.assign !== 'both';
   if (STATE.filter === 'high') return t.priority === 'high';
   if (STATE.filter === 'overdue') {
     if (!t.deadline || t.status === 'done') return false;
@@ -1025,8 +1081,8 @@ function filterTask(t) {
 
 function renderSidebar() {
   const active = STATE.tasks.filter(t => t.status !== 'done');
-  document.getElementById('sb-me-active').textContent = active.filter(t => t.assign==='me'||t.assign==='both').length;
-  document.getElementById('sb-partner-active').textContent = active.filter(t => t.assign==='partner'||t.assign==='both').length;
+  document.getElementById('sb-me-active').textContent = active.filter(t => t.assign===STATE.myMemberId||t.assign==='both').length;
+  document.getElementById('sb-partner-active').textContent = active.filter(t => t.assign!==STATE.myMemberId && t.assign!=='both').length;
   document.getElementById('sb-high').textContent = STATE.tasks.filter(t => t.priority==='high'&&t.status!=='done').length;
   const weekAgo = Date.now() - 7*864e5;
   document.getElementById('sb-done-week').textContent = STATE.tasks.filter(t => t.status==='done'&&(t.doneAt||0)>weekAgo).length;
@@ -1040,12 +1096,12 @@ function renderOverview() {
   document.getElementById('ov-fill').style.width = pct+'%';
   document.getElementById('ov-sub').textContent = `${done} of ${total} tasks complete`;
 
-  const me = STATE.tasks.filter(t=>t.assign==='me').length;
-  const partner = STATE.tasks.filter(t=>t.assign==='partner').length;
-  const both = STATE.tasks.filter(t=>t.assign==='both').length;
-  document.getElementById('ov-split').innerHTML = [
-    {l: STATE.name, v: me}, {l: PARTNER_NAME(), v: partner}, {l: 'Both', v: both}
-  ].map(r=>`<div class="stat-row"><span class="stat-label">${r.l}</span><span class="stat-val">${r.v} tasks</span></div>`).join('');
+  const split = STATE.members.map(m => ({
+    l: m.id === STATE.myMemberId ? m.name + ' (you)' : m.name,
+    v: STATE.tasks.filter(t => t.assign === m.id).length
+  }));
+  split.push({l: 'Both', v: STATE.tasks.filter(t=>t.assign==='both').length});
+  document.getElementById('ov-split').innerHTML = split.map(r=>`<div class="stat-row"><span class="stat-label">${r.l}</span><span class="stat-val">${r.v} tasks</span></div>`).join('');
 
   const upcoming = STATE.tasks.filter(t=>t.deadline&&t.status!=='done').sort((a,b)=>new Date(a.deadline)-new Date(b.deadline)).slice(0,5);
   document.getElementById('ov-deadlines').innerHTML = upcoming.length
@@ -1071,9 +1127,9 @@ function renderOverview() {
 function renderChat() {
   const el = document.getElementById('chat-messages');
   el.innerHTML = STATE.messages.map(m => {
-    const who = m.role === 'ai' ? 'AI' : m.role === 'partner' ? 'P' : (STATE.name||'You')[0];
-    const cls = m.role === 'ai' ? 'ai' : m.role === 'partner' ? 'partner' : 'me';
-    const name = m.role === 'ai' ? 'AI Manager' : m.role === 'partner' ? PARTNER_NAME() : STATE.name;
+    const who = m.role === 'ai' ? 'AI' : m.role === 'user' ? (MY_NAME()||'You')[0] : (m.memberId ? MEMBER_NAME(m.memberId)[0] : 'P');
+    const cls = m.role === 'ai' ? 'ai' : m.role === 'user' ? 'me' : 'partner';
+    const name = m.role === 'ai' ? 'AI Manager' : m.role === 'user' ? MY_NAME() : (m.memberId ? MEMBER_NAME(m.memberId) : 'Partner');
     return `<div class="msg">
       <div class="msg-avatar ${cls}">${who}</div>
       <div>
@@ -1090,7 +1146,7 @@ function renderAIContext() {
   const overdue = STATE.tasks.filter(t=>t.deadline&&t.status!=='done'&&new Date(t.deadline)<new Date()).length;
   document.getElementById('ai-context').innerHTML =
     `<strong>${open}</strong> open tasks<br><strong style="color:var(--red)">${overdue}</strong> overdue<br>Project: <strong>${STATE.project}</strong>`;
-  document.getElementById('ctx-partner-chip').textContent = PARTNER_NAME();
+  document.getElementById('ctx-partner-chip').textContent = `${STATE.members.length} team members`;
 }
 
 /* ═══════════════════════════════════════════
@@ -1104,7 +1160,7 @@ function cycleStatus(id) {
   const prev = t.status;
   t.status = next;
   if (next === 'done') t.doneAt = Date.now();
-  logActivity(`${STATE.name} moved "${t.title}" → ${next}`);
+  logActivity(`${MY_NAME()} moved "${t.title}" → ${next}`);
   saveLocal(); scheduleSave(); render();
   toast(`Task ${next === 'done' ? 'completed ✓' : next === 'in-progress' ? 'started' : 'moved to To do'}`);
 }
@@ -1157,7 +1213,7 @@ function saveTask() {
     t.status = document.getElementById('m-status').value;
     t.deadline = document.getElementById('m-deadline').value;
     t.notes = document.getElementById('m-notes').value.trim();
-    logActivity(`${STATE.name} updated "${title}"`);
+    logActivity(`${MY_NAME()} updated "${title}"`);
   } else {
     const newTask = {
       id: 't'+Date.now(), title,
@@ -1167,10 +1223,10 @@ function saveTask() {
       status: document.getElementById('m-status').value,
       deadline: document.getElementById('m-deadline').value,
       notes: document.getElementById('m-notes').value.trim(),
-      createdBy: MY_ROLE(), createdAt: Date.now()
+      createdBy: STATE.myMemberId, createdAt: Date.now()
     };
     STATE.tasks.push(newTask);
-    logActivity(`${STATE.name} added "${title}"`);
+    logActivity(`${MY_NAME()} added "${title}"`);
   }
   closeModal(); saveLocal(); scheduleSave(); render();
   toast(editTaskId ? 'Task updated' : 'Task added');
@@ -1181,7 +1237,7 @@ function deleteTask() {
   const t = STATE.tasks.find(x=>x.id===editTaskId);
   if (!confirm(`Delete "${t?.title}"?`)) return;
   STATE.tasks = STATE.tasks.filter(x=>x.id!==editTaskId);
-  logActivity(`${STATE.name} deleted "${t?.title}"`);
+  logActivity(`${MY_NAME()} deleted "${t?.title}"`);
   closeModal(); saveLocal(); scheduleSave(); render();
   toast('Task deleted');
 }
@@ -1224,7 +1280,7 @@ async function sendChat() {
 
   inp.value = '';
   const msgId = 'msg'+Date.now();
-  STATE.messages.push({id:msgId, role:'user', text, ts:Date.now()});
+  STATE.messages.push({id:msgId, role:'user', memberId: STATE.myMemberId, text, ts:Date.now()});
   saveLocal(); scheduleSave();
   renderChat();
 
@@ -1250,7 +1306,7 @@ async function sendChat() {
         model: 'llama-3.3-70b-versatile',
         max_tokens: 800,
         messages: [
-          {role:'system', content:`You are a sharp, direct AI project manager for a 2-developer team working on "${STATE.project}". Developer 1 is **pash**. Developer 2 is **void**. The person chatting right now is **${STATE.name}**. Help split tasks fairly between pash and void, set deadlines, track progress, run standups, and improve coordination. Be concise and practical. Use bullet points and bold text where helpful. Current project status: ${done}/${total} tasks done.\n\nCurrent tasks:\n${taskSummary||'No tasks yet.'}`},
+          {role:'system', content:`You are a sharp, direct AI project manager working on "${STATE.project}". Team members: ${STATE.members.map(m=>`${m.name} (skills: ${m.skills||'none listed'})`).join(', ')}. The person chatting right now is ${MY_NAME()} (id: ${STATE.myMemberId}). Help split tasks fairly based on each member's skills, set deadlines, track progress, run standups, and improve coordination. Assign tasks to the member best suited for the work. Be concise and practical. Use bullet points and bold text where helpful. Current project status: ${done}/${total} tasks done.\n\nCurrent tasks:\n${taskSummary||'No tasks yet.'}`},
           ...STATE.messages.slice(-12).filter(m=>m.role!=='ai'||true).map(m=>({
             role: m.role==='ai'?'assistant':'user',
             content: m.text
@@ -1343,7 +1399,7 @@ function esc(s) {
    BOOT
 ═══════════════════════════════════════════ */
 (function boot() {
-  if (loadLocal() && STATE.role) {
+  if (loadLocal() && STATE.myMemberId) {
     initApp();
   }
 })();
