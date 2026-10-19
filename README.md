@@ -10,23 +10,26 @@
 
 </div>
 
-**Real-time collaborative task board + AI pair programming for two developers. Shared Groq key, multiple projects, server-side sync.**
+**Real-time collaborative task board + AI team manager for multiple developers. Profiles, skills-based task splitting, single-branch version control with undo, shared Groq key, server-side sync.**
 
 ---
 
 ## Features
 
+- **Multi-dev workspace** — Unlimited team members, each with a profile and skills
+- **Profiles** — Each dev writes what they can do; AI uses skills to split tasks and set deadlines
+- **Version control** — Git-like single-branch commit history; revert any change to undo it (no branches, no PRs)
 - **Real-time sync** — 5-second polling, ~1s auto-save
-- **AI pair programming** — Shared Groq API key, context-aware assistance
+- **AI team manager** — Shared Groq key, context-aware task splitting and standups
 - **Multi-project** — Create/switch/delete projects per session
-- **Online presence** — See when your partner is active
+- **Online presence** — See when teammates are active
 - **Zero-config deploy** — Upload 2 files to any PHP hosting
 
 ---
 
 ## Quick Start
 
-Real-time task board + AI manager for **pash** and **void**. One shared Groq key, multiple projects, everything saved on your MilesWeb server.
+Collaborative task board + AI manager for your whole team. Each member sets up a profile with skills; everything synced on your MilesWeb server.
 
 ## Files
 
@@ -52,20 +55,14 @@ Share the same URL with both teammates.
 
 ## First-time setup
 
-### pash (Developer 1)
+### Each team member
 1. Open your hosted URL
-2. Select **pash**
+2. Enter your **name** and what you can do (**skills**) — this is your profile
 3. Enter your first project name
-4. Paste your **shared Groq API key** (one key for both of you)
+4. Paste your **shared Groq API key** (one key for the whole team)
 5. Click **Enter DevPair**
 
-### void (Developer 2)
-1. Open the **same URL**
-2. Select **void**
-3. Enter the Groq key if not already saved on the server (or leave blank — it loads from the server)
-4. Click **Enter DevPair**
-
-Both of you now share the same board, chat history, and projects in real time.
+Teammates open the same URL, enter their own name + skills, and join the same team. Everyone shares the same board, chat history, and projects in real time.
 
 ---
 

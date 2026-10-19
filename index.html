@@ -698,6 +698,7 @@ function saveLocal() {
     myMemberId: STATE.myMemberId,
     myName: STATE.myName,
     members: STATE.members,
+    projectCommits: STATE.projectCommits,
     projectId: STATE.projectId,
     project: STATE.project,
     projects: STATE.projects,
@@ -749,6 +750,7 @@ async function pushProject(showToast, commitMessage) {
     }
     if (res.project) {
       STATE.version = res.project.version;
+      STATE.projectCommits = res.project.commits || [];
       STATE.lastSync = Date.now();
       saveLocal();
       updateSyncLabel();
@@ -1250,7 +1252,7 @@ async function revertToCommit(version) {
   STATE.activity = commit.snapshot.activity || [];
   logActivity(`${MY_NAME()} reverted to version ${version}`);
   saveLocal();
-  scheduleSave(undefined, 'Revert to v' + version);
+  scheduleSave('Revert to v' + version);
   toast('Reverted to version ' + version);
 }
 
