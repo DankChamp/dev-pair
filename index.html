@@ -383,6 +383,7 @@ a{color:var(--accent2);text-decoration:none}
               <div class="chat-input-row">
                 <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask the AI manager anything…" onkeydown="chatKeydown(event)"></textarea>
                 <button class="send-btn" id="send-btn" onclick="sendChat()">Send →</button>
+                <button class="send-btn" style="background:transparent;border:1px solid var(--border);color:var(--text2)" onclick="applyAISplit()" title="Apply AI task assignments from last message">Apply plan</button>
               </div>
             </div>
           </div>
@@ -1367,7 +1368,36 @@ function qPrompt(text) {
 }
 
 function aiSplitTasks() {
-  qPrompt('Split all our current tasks fairly between me and my partner. Assign each task, set realistic deadlines, and explain your reasoning.');
+  const members = STATE.members.map(m => m.name + ' (skills: ' + (m.skills||'none listed') + ')').join(', ');
+  qPrompt('Split all current tasks fairly across the team based on each member\'s skills. Team: ' + members + '. For each task, assign it to the member best suited by skill, set a realistic deadline, and explain your reasoning. Output clear assignments like "Assign <task> to <name>".');
+}
+
+function applyAISplit() {
+  const lastAi = [...STATE.messages].reverse().find(m => m.role === 'ai');
+  if (!lastAi) { toast('No AI message to apply'); return; }
+  const text = lastAi.text;
+  let applied = 0;
+  const lines = text.split(/\n|\.\s*/);
+  for (const line of lines) {
+    const m = line.match(/assign\s+(.+?)\s+to\s+(.+)/i);
+    if (!m) continue;
+    const taskTitle = m[1].trim().replace(/^['"]+|['"]+$/g, '');
+    const assigneeName = m[2].trim().replace(/['"]+$/g, '');
+    const member = STATE.members.find(mm => mm.name.toLowerCase() === assigneeName.toLowerCase());
+    if (!member) continue;
+    const task = STATE.tasks.find(t => t.title.toLowerCase().includes(taskTitle.toLowerCase()) || taskTitle.toLowerCase().includes(t.title.toLowerCase()));
+    if (task) {
+      task.assign = member.id;
+      applied++;
+    }
+  }
+  if (applied > 0) {
+    logActivity('AI applied task assignments (' + applied + ' tasks)');
+    saveLocal(); scheduleSave('AI task split'); render();
+    toast('Applied ' + applied + ' assignment(s)');
+  } else {
+    toast('No clear assignments found in AI message');
+  }
 }
 
 function chatKeydown(e) {
