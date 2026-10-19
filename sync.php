@@ -156,6 +156,20 @@ switch ($action) {
             'version' => 1,
             'updatedAt' => time() * 1000,
             'updatedBy' => sanitize_role($body['updatedBy'] ?? 'dev1'),
+            'commits' => [
+                [
+                    'id' => 'c' . (time() * 1000) . '-init',
+                    'message' => 'Project created',
+                    'author' => sanitize_role($body['updatedBy'] ?? 'dev1'),
+                    'ts' => time() * 1000,
+                    'version' => 1,
+                    'snapshot' => [
+                        'tasks' => $body['tasks'] ?? [],
+                        'messages' => $body['messages'] ?? [],
+                        'activity' => $body['activity'] ?? [],
+                    ],
+                ],
+            ],
         ];
         write_json(project_path($id), $project);
 
@@ -191,7 +205,33 @@ switch ($action) {
             }
         }
 
-        $incoming['version'] = ($existing['version'] ?? 0) + 1;
+        $newVersion = ($existing['version'] ?? 0) + 1;
+        $incoming['version'] = $newVersion;
+
+        // ── Git-like single-branch commit history ──
+        $existingCommits = is_array($existing['commits'] ?? null) ? $existing['commits'] : [];
+        $commitMessage = isset($body['commitMessage']) && is_string($body['commitMessage'])
+            ? substr(trim($body['commitMessage']), 0, 200)
+            : ('Auto-save v' . $newVersion);
+        $commit = [
+            'id' => 'c' . (time() * 1000) . '-' . uniqid(),
+            'message' => $commitMessage,
+            'author' => sanitize_role($body['updatedBy'] ?? 'dev1'),
+            'ts' => time() * 1000,
+            'version' => $newVersion,
+            'snapshot' => [
+                'tasks' => $incoming['tasks'],
+                'messages' => $incoming['messages'],
+                'activity' => $incoming['activity'],
+            ],
+        ];
+        $existingCommits[] = $commit;
+        // Keep only the last 100 commits to prevent unbounded growth
+        if (count($existingCommits) > 100) {
+            $existingCommits = array_slice($existingCommits, -100);
+        }
+        $incoming['commits'] = $existingCommits;
+
         write_json($file, $incoming);
 
         $team = load_team();

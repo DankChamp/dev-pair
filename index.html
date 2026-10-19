@@ -319,6 +319,10 @@ a{color:var(--accent2);text-decoration:none}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         Overview
       </button>
+      <button class="tab-btn" onclick="showTab('history',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        History
+      </button>
       <button class="tab-btn" onclick="showTab('settings',this)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 1 0 4.93 19.07 10 10 0 0 0 19.07 4.93z"/></svg>
         Settings
@@ -476,6 +480,19 @@ a{color:var(--accent2);text-decoration:none}
         </div>
       </div>
     </div>
+
+      <!-- ── HISTORY PANEL ── -->
+      <div id="panel-history" class="panel">
+        <div class="board-header">
+          <div>
+            <div class="board-title">Version history</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:3px">Single-branch commit log · revert to undo specific changes</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding-bottom:20px" id="history-list">
+          <!-- commits rendered here -->
+        </div>
+      </div>
 
     <!-- ── RIGHT SIDEBAR ── -->
     <div class="sidebar" id="main-sidebar">
@@ -706,12 +723,12 @@ function loadLocal() {
 /* ═══════════════════════════════════════════
    SERVER SYNC
 ═══════════════════════════════════════════ */
-function scheduleSave() {
+function scheduleSave(commitMessage) {
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => pushProject(false), 800);
+  saveTimer = setTimeout(() => pushProject(false, commitMessage), 800);
 }
 
-async function pushProject(showToast) {
+async function pushProject(showToast, commitMessage) {
   if (!STATE.projectId) return;
   try {
     const res = await api('save_project', {
@@ -722,6 +739,7 @@ async function pushProject(showToast) {
       activity: STATE.activity.slice(-50),
       version: STATE.version,
       updatedBy: STATE.myMemberId,
+      commitMessage,
     });
     if (res.conflict && res.project) {
       applyProject(res.project, true);
@@ -750,6 +768,7 @@ function applyProject(data, silent) {
     STATE.messages = data.messages || STATE.messages;
     STATE.activity = data.activity || STATE.activity;
     STATE.version = data.version || STATE.version;
+    STATE.projectCommits = data.commits || [];
     document.getElementById('project-name-inp').value = STATE.project;
     saveLocal();
     render();
@@ -1012,6 +1031,7 @@ function render() {
   renderChat();
   renderAIContext();
   renderTeamMembers();
+  renderHistory();
 }
 
 function renderBoard() {
@@ -1151,6 +1171,88 @@ function renderAIContext() {
 
 /* ═══════════════════════════════════════════
    TASK ACTIONS
+function renderTeamMembers() {
+  const el = document.getElementById('team-members-list');
+  if (!el) return;
+  if (!STATE.members || STATE.members.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3)">No team members yet</div>';
+    return;
+  }
+  el.innerHTML = STATE.members.map(m => {
+    const isMe = m.id === STATE.myMemberId;
+    return `<div class="member-card">
+      <div class="member-dot" style="background:${m.color}"></div>
+      <div class="member-info">
+        <div class="member-name ${isMe?'member-me':''}">${esc(m.name)}${isMe ? ' (you)' : ''}</div>
+        <div class="member-skills">${esc(m.skills) || 'No skills listed'}</div>
+      </div>
+      ${isMe ? '' : `<span class="member-chip">Member</span>`}
+    </div>`;
+  }).join('');
+}
+
+async function saveProfile() {
+  const name = document.getElementById('set-profile-name').value.trim();
+  const skills = document.getElementById('set-profile-skills').value.trim();
+  if (!name) { toast('Enter a name'); return; }
+
+  const member = STATE.members.find(m => m.id === STATE.myMemberId);
+  if (member) {
+    member.name = name;
+    member.skills = skills;
+    STATE.myName = name;
+  }
+  await api('save_team', { members: STATE.members, groqKey: STATE.groqKey });
+  saveLocal();
+  render();
+  renderTeamMembers();
+  toast('Profile saved');
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!el) return;
+  const commits = STATE.projectCommits || [];
+  if (commits.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text3)">No history yet</div>';
+    return;
+  }
+  el.innerHTML = commits.slice().reverse().map(c => {
+    const isCurrent = c.version === STATE.version;
+    const authorName = MEMBER_NAME(c.author);
+    const date = new Date(c.ts || 0);
+    const dateStr = date.toLocaleString ? date.toLocaleString() : String(c.ts);
+    const snapshotNote = c.snapshot ? `${c.snapshot.tasks||[]} tasks · ${c.snapshot.messages||[]} msgs · ${c.snapshot.activity||[]} activity` : '';
+    return `<div class="member-card" style="cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div class="member-info">
+          <div class="member-name" style="color:var(--text)">v${c.version}${isCurrent ? ' (current)' : ''}</div>
+          <div class="member-skills" style="color:var(--text2)">${esc(c.message)}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${authorName} · ${dateStr}</div>
+        </div>
+        <div style="font-size:11px;color:var(--text3)">${snapshotNote}</div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn-sm" onclick="revertToCommit(${c.version})" ${isCurrent?'disabled':''}>${isCurrent?'Current':'Revert to this'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function revertToCommit(version) {
+  if (!confirm('Revert the project to this version? This creates a new commit restoring that state.')) return;
+  const commit = (STATE.projectCommits || []).find(c => c.version === version);
+  if (!commit || !commit.snapshot) { toast('Cannot find commit data'); return; }
+
+  STATE.tasks = commit.snapshot.tasks || [];
+  STATE.messages = commit.snapshot.messages || [];
+  STATE.activity = commit.snapshot.activity || [];
+  logActivity(`${MY_NAME()} reverted to version ${version}`);
+  saveLocal();
+  scheduleSave(undefined, 'Revert to v' + version);
+  toast('Reverted to version ' + version);
+}
+
 ═══════════════════════════════════════════ */
 function cycleStatus(id) {
   const t = STATE.tasks.find(x=>x.id===id);
