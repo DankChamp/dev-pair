@@ -65,6 +65,11 @@ function project_path($id) {
     return PROJECTS_DIR . $id . '.json';
 }
 
+function sanitize_member_id($v) {
+    // Member IDs are client-generated (e.g. "dev" + timestamp) — keep alphanumerics/dashes only
+    return substr(preg_replace('/[^a-zA-Z0-9\-_]/', '', $v ?? ''), 0, 64);
+}
+
 function sanitize_role($role) {
     return in_array($role, ['dev1', 'dev2'], true) ? $role : 'dev1';
 }
@@ -78,7 +83,7 @@ function sanitize_project($body) {
         'activity' => array_slice(is_array($body['activity'] ?? null) ? $body['activity'] : [], -50),
         'version' => intval($body['version'] ?? 0),
         'updatedAt' => time() * 1000,
-        'updatedBy' => sanitize_role($body['updatedBy'] ?? 'dev1'),
+        'updatedBy' => sanitize_member_id($body['updatedBy'] ?? ''),
     ];
 }
 
@@ -155,12 +160,12 @@ switch ($action) {
             'activity' => $body['activity'] ?? [],
             'version' => 1,
             'updatedAt' => time() * 1000,
-            'updatedBy' => sanitize_role($body['updatedBy'] ?? 'dev1'),
+            'updatedBy' => sanitize_member_id($body['updatedBy'] ?? ''),
             'commits' => [
                 [
                     'id' => 'c' . (time() * 1000) . '-init',
                     'message' => 'Project created',
-                    'author' => sanitize_role($body['updatedBy'] ?? 'dev1'),
+                    'author' => sanitize_member_id($body['updatedBy'] ?? ''),
                     'ts' => time() * 1000,
                     'version' => 1,
                     'snapshot' => [
@@ -216,7 +221,7 @@ switch ($action) {
         $commit = [
             'id' => 'c' . (time() * 1000) . '-' . uniqid(),
             'message' => $commitMessage,
-            'author' => sanitize_role($body['updatedBy'] ?? 'dev1'),
+            'author' => sanitize_member_id($body['updatedBy'] ?? ''),
             'ts' => time() * 1000,
             'version' => $newVersion,
             'snapshot' => [
@@ -270,7 +275,7 @@ switch ($action) {
         echo json_encode(['ok' => true]);
         break;
 
-    /* ── Presence (pash / void online status) ── */
+    /* ── Presence (per-member online status, keyed by member id) ── */
     case 'presence_push':
         $role = preg_replace('/[^a-zA-Z0-9\-_]/', '', $body['role'] ?? 'member');
         $name = substr($body['name'] ?? '', 0, 50);

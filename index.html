@@ -797,8 +797,20 @@ async function pullTeam() {
     const team = await api('team', {}, 'GET');
     if (team.groqKey) STATE.groqKey = team.groqKey;
     if (team.projects) STATE.projects = team.projects;
+    if (Array.isArray(team.members) && team.members.length) {
+      const me = team.members.find(m => m.id === STATE.myMemberId);
+      if (me) {
+        STATE.members = team.members;
+      } else if (STATE.myMemberId) {
+        const local = (STATE.members || []).find(m => m.id === STATE.myMemberId);
+        const member = local || { id: STATE.myMemberId, name: MY_NAME(), skills: '', color: memberColorForIndex(team.members.length) };
+        STATE.members = [...team.members, member];
+        await api('save_team', { members: STATE.members, groqKey: STATE.groqKey });
+      }
+    }
     renderProjectSelect();
     renderProjectsList();
+    renderTeamMembers();
     document.getElementById('set-groq').value = STATE.groqKey || '';
   } catch (e) {}
 }
@@ -886,6 +898,7 @@ async function loadProjectFromServer(id) {
   STATE.messages = data.messages?.length ? data.messages : [{ role: 'ai', text: `Switched to "${data.name}". What should the team work on here?`, ts: Date.now() }];
   STATE.activity = data.activity || [];
   STATE.version = data.version || 0;
+  STATE.projectCommits = data.commits || [];
   document.getElementById('project-name-inp').value = STATE.project;
   saveLocal();
   render();
@@ -1173,7 +1186,8 @@ function renderAIContext() {
 }
 
 /* ═══════════════════════════════════════════
-   TASK ACTIONS
+   TEAM PROFILES & HISTORY
+═══════════════════════════════════════════ */
 function renderTeamMembers() {
   const el = document.getElementById('team-members-list');
   if (!el) return;
@@ -1256,6 +1270,9 @@ async function revertToCommit(version) {
   toast('Reverted to version ' + version);
 }
 
+
+/* ═══════════════════════════════════════════
+   TASK ACTIONS
 ═══════════════════════════════════════════ */
 function cycleStatus(id) {
   const t = STATE.tasks.find(x=>x.id===id);
